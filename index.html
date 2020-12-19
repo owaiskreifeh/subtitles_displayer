@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
+<body style="margin: 0; padding: 0;">
     
-    <div id="video-container" style="width: 500px; height: 500px;">
+    <div id="video-container" style="width: 100%; height: 100%;">
         <video 
         id="video" 
         autoplay
-        style="width: 500px; height: 500px;"
+        style="width: 100%; height: 100%; position: absolute;"
+        loop
+        controls
         src="https://github.com/ThePacielloGroup/AT-browser-tests/blob/gh-pages/video/ElephantsDream.mp4?raw=true">
         <track 
         kind="captions" srclang="en" label="English" default=""

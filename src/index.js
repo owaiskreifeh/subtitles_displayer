@@ -3,6 +3,8 @@ import VttParser from './lib/vttParser/parser.js';
 import Logger from './lib/log.js'
 import { $, el, isArrayEqual } from './lib/helpers.js';
 
+
+const CUE_CONT_CLASS = '__displayer_cues_container';
 export default class SubtitlesDisplayer {
     constructor(videoContainer, videoElement = null, debug = false){
         this._videoElement = videoElement;
@@ -13,6 +15,8 @@ export default class SubtitlesDisplayer {
 
         this._isVisible = false;
         this._lastRenderedCues = [];
+
+        this._cuesContainer = this._getCuesContainer(); // init container
 
         Logger.debug = debug;
 
@@ -31,7 +35,7 @@ export default class SubtitlesDisplayer {
         }
 
         const vttText = await request("GET", url);
-        const vttObject = VttParser.parse(vttText, { meta: true });
+        const vttObject = VttParser.parse(vttText, { meta: true }, this._videoContainer.clientHeight);
         this._textTracks.push({
             language,
             cues: vttObject.cues
@@ -49,9 +53,14 @@ export default class SubtitlesDisplayer {
 
     setTextVisiblity = (visbile) => {
         this._isVisible = visbile;
+        if (!visbile){
+            this._clearRenderedCues()
+        }
     }
 
     updateSubtitles(time) {
+        if (! this._isVisible) return;
+
         if (!this._currenTextTrack.cues) {
             Logger.warn("No selected track")
             return;
@@ -71,7 +80,6 @@ export default class SubtitlesDisplayer {
         }
     }
 
-
     _registerListener = () => {
         this._videoElement.addEventListener('timeupdate', ev => {
             this.updateSubtitles(this._videoElement.currentTime)
@@ -79,15 +87,16 @@ export default class SubtitlesDisplayer {
     }
 
     _renderCues = (cues) => {
-        const cueCont = this._getCuesContainer();
-        this._clearRenderedCues(cueCont);
+        this._clearRenderedCues();
         cues.forEach((c, i) => {
             let text = c.text.trim();
             const textLines = text.split("\n");
+            this._applyStyles(c.cssStyles)
             textLines.forEach((line, i) => {
                 const cueText = el('p');
+                cueText.style.width = this._videoContainer.clientWidth + "px"
                 cueText.textContent = line;
-                cueCont.appendChild(cueText); 
+                this._cuesContainer.appendChild(cueText); 
                 if (i !== textLines.length - 1){
                     const breakLine = el('br');
                     cueText.appendChild(breakLine); 
@@ -98,20 +107,27 @@ export default class SubtitlesDisplayer {
     }
 
     _getCuesContainer = () => {
-        let container = $("#__displayer_cues_container");
+        let container = $(`.${CUE_CONT_CLASS}`);
         if (!container){
             container = el('div');
-            container.id = "__displayer_cues_container";
+            container.className = CUE_CONT_CLASS;
             this._videoContainer.appendChild(container)
         }
 
         return container;
     }
 
-    _clearRenderedCues = (cueCont) => {
-        while (cueCont.firstChild) {
-            cueCont.removeChild(cueCont.lastChild);
+    _clearRenderedCues = () => {
+        while (this._cuesContainer.firstChild) {
+            this._cuesContainer.removeChild(this._cuesContainer.lastChild);
         }
+    }
+
+    _applyStyles = (styles) => {
+        Object.keys(styles).forEach(attr => {
+            this._cuesContainer.style[attr] = styles[attr];
+            console.log(styles.attr)
+        })
     }
 
 }
