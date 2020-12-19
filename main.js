@@ -9,4 +9,5 @@ subtitlesDisplayer
     )
     .then((tracks) => {
         subtitlesDisplayer.selectTrackLanguage("ar");
+        subtitlesDisplayer.setTextVisiblity(true)
     })

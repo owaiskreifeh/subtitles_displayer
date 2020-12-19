@@ -81,10 +81,18 @@ export default class SubtitlesDisplayer {
     _renderCues = (cues) => {
         const cueCont = this._getCuesContainer();
         this._clearRenderedCues(cueCont);
-        cues.forEach(c => {
-            const cueText = el('p');
-            cueText.textContent = `vt: ${this._videoElement.currentTime}, cs: ${c.start}, ce: ${c.end}, TEXT: ${c.text}`;
-            cueCont.appendChild(cueText);
+        cues.forEach((c, i) => {
+            let text = c.text.trim();
+            const textLines = text.split("\n");
+            textLines.forEach((line, i) => {
+                const cueText = el('p');
+                cueText.textContent = line;
+                cueCont.appendChild(cueText); 
+                if (i !== textLines.length - 1){
+                    const breakLine = el('br');
+                    cueText.appendChild(breakLine); 
+                }
+            })
         })
         this._lastRenderedCues = cues;
     }
