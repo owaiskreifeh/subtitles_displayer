@@ -1,1 +1,1 @@
-export {default as SubtitlesDisplayer} from './src/index.js'
+export {default as SubtitlesDisplayer} from './src/index'

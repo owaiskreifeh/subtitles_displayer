@@ -1,5 +1,5 @@
 'use strict';
-import { vttStylesToCSS } from './styleParser.js'
+import { vttStylesToCSS } from './styleParser'
 /**
  * See spec: https://www.w3.org/TR/webvtt1/#file-structure
  */

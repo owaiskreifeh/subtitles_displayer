@@ -2,7 +2,7 @@
   "name": "owais-subtitles-display",
   "version": "0.0.1",
   "description": "display subtitles as standalone elements",
-  "main": "index.js",
+  "main": "index",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

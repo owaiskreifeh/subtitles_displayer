@@ -1,7 +1,7 @@
-import { request } from './lib/networking.js';
-import VttParser from './lib/vttParser/parser.js';
-import Logger from './lib/log.js'
-import { $, el, isArrayEqual } from './lib/helpers.js';
+import { request } from './lib/networking';
+import VttParser from './lib/vttParser/parser';
+import Logger from './lib/log'
+import { $, el, isArrayEqual } from './lib/helpers';
 
 
 const CUE_CONT_CLASS = '__displayer_cues_container';
