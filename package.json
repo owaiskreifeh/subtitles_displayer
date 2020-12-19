@@ -1,0 +1,25 @@
+{
+  "name": "owais-subtitles-display",
+  "version": "0.0.1",
+  "description": "display subtitles as standalone elements",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/owaiskreifeh/subtitles_displayer.git"
+  },
+  "keywords": [
+    "vtt",
+    "subtitles",
+    "ttml",
+    "webvtt"
+  ],
+  "author": "Owais kreifeh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/owaiskreifeh/subtitles_displayer/issues"
+  },
+  "homepage": "https://github.com/owaiskreifeh/subtitles_displayer#readme"
+}
