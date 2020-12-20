@@ -18,6 +18,8 @@ export default class SubtitlesDisplayer {
 
         this._cuesContainer = this._getCuesContainer(); // init container
 
+        this._cueStyles = {};
+
         Logger.debug = debug;
 
         if (videoElement){
@@ -58,6 +60,10 @@ export default class SubtitlesDisplayer {
         }
     }
 
+    setCueStyles =  (styles) => {
+        this._cueStyles = styles;
+    }
+
     // call manually when no videoElement
     // time => currentTime
     updateSubtitles(time) {
@@ -73,7 +79,7 @@ export default class SubtitlesDisplayer {
             return;
         }
 
-        const currentCues = cues.filter(c => {
+        const currentCues = cues.filter(c => { // todo refactor to opt
             return time >= c.start  &&  time <= c.end;
         })
 
@@ -95,18 +101,26 @@ export default class SubtitlesDisplayer {
         cues.forEach((c, i) => {
             let text = c.text.trim();
             const textLines = text.split("\n");
-            this._applyStyles(c.cssStyles)
+            const cueText = el('p'); // @todo convert to <span>, nest inside <p>
+            cueText.style.width = this._videoContainer.clientWidth + "px";
+
             textLines.forEach((line, i) => {
-                const cueText = el('p'); // @todo convert to <span>, nest inside <p>
-                cueText.style.width = this._videoContainer.clientWidth + "px";
-                cueText.textContent = line;
-                this._cuesContainer.appendChild(cueText); 
+                const lineSpan = el("span");
+                cueText.appendChild(lineSpan); 
+
+                lineSpan.textContent = line;
                 if (i !== textLines.length - 1){
                     const breakLine = el('br');
                     cueText.appendChild(breakLine); 
                 }
             })
-        })
+            let cueStyles = this._cueStyles;
+            if (cueStyles){
+                cueStyles = Object.assign({}, c.cssStyles, cueStyles)
+            }
+            this._applyStyles(cueText, cueStyles)
+            this._cuesContainer.appendChild(cueText); 
+        }) // @todo refactor to call broswer apis one time
         this._lastRenderedCues = cues;
     }
 
@@ -115,6 +129,14 @@ export default class SubtitlesDisplayer {
         if (!container){
             container = el('div');
             container.className = CUE_CONT_CLASS;
+            
+            container.style.position = 'absolute'
+            container.style.width = this._videoContainer.style.width;
+            container.style.height = this._videoContainer.style.height;
+            container.style.top = 0;
+            container.style.left = 0;
+            container.style.border = '2px dashed green'
+
             this._videoContainer.appendChild(container)
         }
 
@@ -127,9 +149,9 @@ export default class SubtitlesDisplayer {
         }
     }
 
-    _applyStyles = (styles) => {
+    _applyStyles = (element, styles) => {
         Object.keys(styles).forEach(attr => {
-            this._cuesContainer.style[attr] = styles[attr];
+            element.style[attr] = styles[attr];
         })
     }
 

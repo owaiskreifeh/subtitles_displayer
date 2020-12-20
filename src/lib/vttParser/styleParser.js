@@ -126,7 +126,6 @@ function styleParser(vttStyleText) {
 }
 
 export function vttStylesToCSS(vttStyleText, containerHeight) {
-
     /**
      * 
      * General rules for styling
@@ -157,7 +156,6 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     style.paddingLeft = vttStyles.linePadding
     style.paddingRight = vttStyles.linePadding
     style.textAlign = vttStyles.align || "center"; // @todo check if vertical
-    style.position = 'relative';
 
     // style.textDecoration = vttStyles.textDecoration.join(' ');
     style.writingMode = vttStyles.writingMode; // @todo this should be: vertical-rl || vertical-lr
@@ -167,6 +165,7 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     style.right = ''
     style.bottom = ''
     style.top = ''
+    style.position = 'absolute'
 
     if (vttStyles.backgroundImage) {
       style.backgroundImage = 'url(\'' + vttStyles.backgroundImage + '\')';
@@ -183,10 +182,26 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     }
 
     // @todo check for % and number rules
+    /**
+     * line: if(int) line>0 ? top-down, bottom-top
+     * if(%): assert line>0; 0% top, 100% bottom
+     */
     if (vttStyles.line) {
-        style.top = containerHeight / 50 - (vttStyles.line * 50 % containerHeight)  + "px"
-
-
+        const lenghtInfo = getLengthValueInfo(vttStyles.line);
+        switch(lenghtInfo.unit){
+          case "line": 
+            if (lenghtInfo.value < 0) {
+              style.bottom = lenghtInfo.value * -1 + "em"
+            }else{
+              style.top = lenghtInfo.value + "em"
+            }
+            break;
+          case "%":
+              style.top = lenghtInfo.value / 100 * containerHeight + "em" ;
+            break;
+        }
+    }else{
+      style.bottom = "1em"
     }
 
     // reset any undefined css attrs
@@ -204,7 +219,11 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     const matches = new RegExp(/(\d*\.?\d+)([a-z]+|%+)/).exec(lengthValue);
 
     if (!matches) {
-      return null;
+      return {
+        value: Number(lengthValue),
+        unit: "line",
+  
+      };
     }
 
     return {
