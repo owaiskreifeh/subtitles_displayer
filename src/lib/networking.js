@@ -1,5 +1,3 @@
-/* eslint-disable func-names */
-/* eslint-disable import/prefer-default-export */
 // Keep any extern-lib out
 // do not use Axios
 // this package should be clean and self isolated as possible

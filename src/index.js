@@ -1,10 +1,13 @@
 import { request } from "./lib/networking";
 import VttParser from "./lib/vttParser/parser";
+import HlsManager from './lib/hlsManager/HlsManager';
 import Logger from "./lib/log";
 import { $, el, isArrayEqual } from "./lib/helpers";
 
 const CUE_CONT_CLASS = "__displayer_cues_container";
 export default class SubtitlesDisplayer {
+  static hlsManager = new HlsManager();
+  
   constructor(videoContainer, videoElement = null, debug = false) {
     this._videoElement = videoElement;
     this._videoContainer = videoContainer;
@@ -21,6 +24,11 @@ export default class SubtitlesDisplayer {
 
     Logger.debug = debug;
 
+    this._hlsManager = null;
+    this._isSegmented = false;
+    this._currentLoadingUrls = [];
+    this._loadedUrls = [];
+    this._throttolRequests = false;
     if (videoElement) {
       this._registerListener();
     }
@@ -34,12 +42,7 @@ export default class SubtitlesDisplayer {
       throw `language should be of type string, else found ${typeof language}`;
     }
 
-    const vttText = await request("GET", url);
-    const vttObject = VttParser.parse(
-      vttText,
-      { meta: true },
-      this._videoContainer.clientHeight
-    );
+    const vttObject = this._parseRemoteVtt(url)
     this._textTracks.push({
       language,
       cues: vttObject.cues
@@ -47,12 +50,34 @@ export default class SubtitlesDisplayer {
     return this._textTracks;
   };
 
-  selectTrackLanguage = language => {
+  addM3U8Manifest = manifestUrl => {
+    this._hlsManager = new HlsManager();
+    this._isSegmented = true;
+    return this._hlsManager.loadManifest(manifestUrl)
+    .then(tracks => {
+      tracks.forEach(track => {
+        this._textTracks.push(track);
+      })
+    })
+  }
+
+  selectTrackLanguage = async language => {
     const track = this._textTracks.find(
       t => t.language.toLowerCase() === language.toLowerCase()
     );
     if (!track) {
       throw `No track for selected language ${language}`;
+    }
+    if (this._isSegmented) {
+      await this._hlsManager.loadTrack(language)
+      .then((track) => {
+        this._textTracks.forEach((t, i) => {
+          if (track.language == t.language){
+            this._textTracks[i] = track
+          }
+        })
+        console.log(this._textTracks)
+      })
     }
     this._currenTextTrack = track;
   };
@@ -68,29 +93,78 @@ export default class SubtitlesDisplayer {
     this._cueStyles = styles;
   };
 
+  appendCues = (language, cues) => {
+    this._textTracks.forEach((t, i) => {
+      if (language == t.language){
+        t.cues.push(...cues)
+      }
+    })
+  }
+
   // call manually when no videoElement
   // time => currentTime
-  updateSubtitles(time) {
+  async updateSubtitles(duration) {
     if (!this._isVisible) return;
 
     if (!this._currenTextTrack.cues) {
       Logger.warn("No selected track");
       return;
     }
-    const { cues } = this._currenTextTrack;
+    const { cues, language } = this._currenTextTrack;
     if (!cues) {
       Logger.warn("No cues in the track");
       return;
     }
 
-    const currentCues = cues.filter(c => {
-      // todo refactor to opt
-      return time >= c.start && time <= c.end;
-    });
+    const currentCues = [];
+    for (let index = 0; index < cues.length; index++) {
+      const c = cues[index];
+      if (duration >= c.start && duration <= c.end){
+        currentCues.push(c);
+      }
+    }
+
+    if (currentCues.length < 1 && this._isSegmented && !this._throttolRequests) {
+      this._throttolRequests = true;
+      setTimeout(() => {
+        const segment = this._hlsManager.getSegmentForDuration(language, duration);
+        this._loadSegemnt(language, segment.url);
+
+        // preload next segment
+        const nextUrl = this._hlsManager.getSegment(language, segment.index+1);
+        if (nextUrl.url) {
+          this._loadSegemnt(language, nextUrl.url);
+        }
+        this._throttolRequests = false;
+      }, 3000);
+    }
 
     if (!isArrayEqual(currentCues, this._lastRenderedCues, "index")) {
       this._renderCues(currentCues); // @todo deep compare cues
     }
+  }
+
+
+  _loadSegemnt = async (language, url) => {
+    console.log("_loadSegemnt", url)
+    if (this._currentLoadingUrls.includes(url) && this._loadedUrls.includes(url)){
+      return null;
+    }
+    this._currentLoadingUrls.push(url)
+    const lastIndex = this._currentLoadingUrls.length - 1;
+    const cues = (await this._parseRemoteVtt(url)).cues;
+    this.appendCues(language, cues)
+    this._loadedUrls.push(this._currentLoadingUrls.splice(lastIndex, 1)[0])
+  }
+
+  _parseRemoteVtt = async url => {
+    const vttText = await request("GET", url);
+    return VttParser.parse(
+      vttText,
+      { meta: true },
+      this._videoContainer.clientHeight
+    );
+
   }
 
   _registerListener = () => {
