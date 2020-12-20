@@ -96,7 +96,6 @@ export default class SubtitlesDisplayer {
     }
 
     _renderCues = (cues) => {
-        console.log(cues)
         this._clearRenderedCues();
         cues.forEach((c, i) => {
             let text = c.text.trim();

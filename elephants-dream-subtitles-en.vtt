@@ -7,7 +7,7 @@ Emo, close your eyes
 Why?
 NOW!
 
-00:05.597 --> 00:07.405 line:-5 position:50% align:right size:100%
+00:05.597 --> 00:07.405 line:-5 position:50% size:100%
 Ok 
 
 00:07.405 --> 00:08.803
@@ -16,7 +16,7 @@ Good
 00:08.803 --> 00:11.541
 What do you see at your left side Emo?
 
-00:11.541 --> 00:13.287 line:-5 position:50% align:left size:100%
+00:11.541 --> 00:13.287 line:-5 position:50% size:100%
 Well? تكست عربي
 
 00:13.287 --> 00:16.110
@@ -27,8 +27,20 @@ Really?
 Er nothing?
 Really?
 
-00:16.110 --> 00:18.514 line:-30 position:20% align:left size:100%
+00:16.110 --> 00:22.000 line:2 position:20% align:left size:100%
 No, nothing at all! مع أشًكِكال
+
+00:16.110 --> 00:22.000 line:1 position:50% size:100%
+TOP
+
+00:16.110 --> 00:22.000 line:-1 position:50% size:100%
+BOTTOM
+
+00:16.110 --> 00:22.000 line:5 position:50% align:left size:100%
+LEFT
+
+00:16.110 --> 00:22.000 line:5 position:50% align:right size:100%
+RIGHT
 
 00:18.514 --> 00:22.669
 Really? and at your right? What do you see at your right side Emo?
