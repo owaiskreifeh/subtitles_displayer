@@ -57,8 +57,6 @@ export default class SubtitlesDisplayer {
     this._currenTextTrack = track;
   };
 
-  appendCues = (language, cues) => {};
-
   setTextVisiblity = visbile => {
     this._isVisible = visbile;
     if (!visbile) {

@@ -30,7 +30,6 @@
     "release": "standard-version",
     "postpublish": "git push origin master --follow-tags"
   },
-  
   "lint-staged": {
     "*.js": [
       "eslint --fix",
@@ -40,7 +39,9 @@
   "keywords": [
     "subtitles, vtt, m3u8"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "m3u8-parser": "4.5.0"
+  },
   "devDependencies": {
     "@babel/cli": "7.4.4",
     "@babel/core": "7.4.5",

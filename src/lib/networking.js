@@ -1,32 +1,35 @@
-
-// Keep any extern-lib out 
+/* eslint-disable func-names */
+/* eslint-disable import/prefer-default-export */
+// Keep any extern-lib out
 // do not use Axios
-// this package should be clean and self isolated as possible 
-export function request (method, url){
-    return new Promise(function(resolve, reject) {
-        // 1. Create a new XMLHttpRequest object
-        let xhr = new XMLHttpRequest();
+// this package should be clean and self isolated as possible
+export function request(method, url) {
+  return new Promise(function(resolve, reject) {
+    // 1. Create a new XMLHttpRequest object
+    const xhr = new XMLHttpRequest();
 
-        // 2. Configure it: GET-request for the URL /article/.../load
-        xhr.open(method, url);
+    // 2. Configure it: GET-request for the URL /article/.../load
+    xhr.open(method, url);
 
-        // 3. Send the request over the network
-        xhr.send();
+    // 3. Send the request over the network
+    xhr.send();
 
-        // 4. This will be called after the response is received
-        xhr.onload = function() {
-        if (xhr.status != 200) { // analyze HTTP status of the response
-            reject({
-                status: xhr.status,
-                response: xhr.response
-            })
-        } else { // show the result
-            resolve(xhr.response)
-        }
-        };
-        
-        xhr.onerror = function() {
-            reject("Network error")
-        };
-    })
+    // 4. This will be called after the response is received
+    xhr.onload = function() {
+      if (xhr.status !== 200) {
+        // analyze HTTP status of the response
+        reject({
+          status: xhr.status,
+          response: xhr.response
+        });
+      } else {
+        // show the result
+        resolve(xhr.response);
+      }
+    };
+
+    xhr.onerror = function() {
+      reject("Network error");
+    };
+  });
 }
