@@ -1,5 +1,7 @@
 
-
+// Keep any extern-lib out 
+// do not use Axios
+// this package should be clean and self isolated as possible 
 export function request (method, url){
     return new Promise(function(resolve, reject) {
         // 1. Create a new XMLHttpRequest object

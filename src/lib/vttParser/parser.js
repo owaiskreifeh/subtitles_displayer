@@ -1,5 +1,5 @@
 'use strict';
-import { vttStylesToCSS } from './styleParser'
+import { vttStylesToCSS } from './styleParser.js'
 /**
  * See spec: https://www.w3.org/TR/webvtt1/#file-structure
  */
@@ -110,6 +110,7 @@ function parseCues (cues, strict, containerHeight) {
  *
  * @returns {object} cue Cue object with start, end, text and styles.
  *                       Null if it's a note
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/WebVTT_API#Cue_payload_text_tags
  */
 function parseCue (cue, i, strict, containerHeight) {
   let identifier = '';
@@ -119,6 +120,7 @@ function parseCue (cue, i, strict, containerHeight) {
   let styles = '';
 
   // split and remove empty lines
+  // @TODO check for vtt xml tages ex: <c.className>text</c>
   const lines = cue.split('\n').filter(Boolean);
 
   if (lines.length > 0 && lines[0].trim().startsWith('NOTE')) {
@@ -178,7 +180,7 @@ function parseCue (cue, i, strict, containerHeight) {
     return false;
   }
 
-  return { identifier, start, end, text, styles, cssStyles };
+  return { identifier, start, end, text, styles, cssStyles, index: i };
 }
 
 function validTimestamp (timestamp) {

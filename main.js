@@ -1,5 +1,5 @@
-import SubtitlesDisplayer from './src/index';
-import { $ } from './src/lib/helpers';
+import SubtitlesDisplayer from './src/index.js';
+import { $ } from './src/lib/helpers.js';
 
 const subtitlesDisplayer = new SubtitlesDisplayer($("#video-container"), $("#video"), true);
 subtitlesDisplayer

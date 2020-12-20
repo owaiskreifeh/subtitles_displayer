@@ -1,7 +1,7 @@
-import { request } from './lib/networking';
-import VttParser from './lib/vttParser/parser';
-import Logger from './lib/log'
-import { $, el, isArrayEqual } from './lib/helpers';
+import { request } from './lib/networking.js';
+import VttParser from './lib/vttParser/parser.js';
+import Logger from './lib/log.js'
+import { $, el, isArrayEqual } from './lib/helpers.js';
 
 
 const CUE_CONT_CLASS = '__displayer_cues_container';
@@ -58,6 +58,8 @@ export default class SubtitlesDisplayer {
         }
     }
 
+    // call manually when no videoElement
+    // time => currentTime
     updateSubtitles(time) {
         if (! this._isVisible) return;
 
@@ -75,26 +77,28 @@ export default class SubtitlesDisplayer {
             return time >= c.start  &&  time <= c.end;
         })
 
-        if (!isArrayEqual(currentCues, this._lastRenderedCues)){
-            this._renderCues(currentCues);
+        if (!isArrayEqual(currentCues, this._lastRenderedCues, 'index')){
+            this._renderCues(currentCues); // @todo deep compare cues
         }
     }
 
     _registerListener = () => {
+        // start listen to video timeupdate if videoElement
         this._videoElement.addEventListener('timeupdate', ev => {
             this.updateSubtitles(this._videoElement.currentTime)
         });
     }
 
     _renderCues = (cues) => {
+        console.log(cues)
         this._clearRenderedCues();
         cues.forEach((c, i) => {
             let text = c.text.trim();
             const textLines = text.split("\n");
             this._applyStyles(c.cssStyles)
             textLines.forEach((line, i) => {
-                const cueText = el('p');
-                cueText.style.width = this._videoContainer.clientWidth + "px"
+                const cueText = el('p'); // @todo convert to <span>, nest inside <p>
+                cueText.style.width = this._videoContainer.clientWidth + "px";
                 cueText.textContent = line;
                 this._cuesContainer.appendChild(cueText); 
                 if (i !== textLines.length - 1){
@@ -126,7 +130,6 @@ export default class SubtitlesDisplayer {
     _applyStyles = (styles) => {
         Object.keys(styles).forEach(attr => {
             this._cuesContainer.style[attr] = styles[attr];
-            console.log(styles.attr)
         })
     }
 

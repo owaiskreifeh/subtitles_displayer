@@ -114,7 +114,7 @@ const _positionAlign = {
   };
   
 
-
+// @link https://developer.mozilla.org/en-US/docs/Web/API/WebVTT_API#Cue_settings
 function styleParser(vttStyleText) {
     const stylesChunks = vttStyleText.split(" ");
     const parsed = {};
@@ -126,6 +126,19 @@ function styleParser(vttStyleText) {
 }
 
 export function vttStylesToCSS(vttStyleText, containerHeight) {
+
+    /**
+     * 
+     * General rules for styling
+     * 
+     * line: if(int) line>0 ? top-down, bottom-top
+     *       if(%): assert line>0; 0% top, 100% bottom
+     * vertical: lr = ltr; rl = rtl
+     * position: assert position>0; 0% left; 100% right
+     * size: assert size>0; width = size%
+     * align: if (vertical) align = vertical-align // if vertical attr appears in the cue settings
+     *        else align = text-align 
+     */
 
     if(!containerHeight){
         throw ("containerHeight should be set")
@@ -143,16 +156,18 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     style.opacity = vttStyles.opacity;
     style.paddingLeft = vttStyles.linePadding
     style.paddingRight = vttStyles.linePadding
-    style.textAlign = vttStyles.align || "center";
-    style.position = 'absolute';
+    style.textAlign = vttStyles.align || "center"; // @todo check if vertical
+    style.position = 'relative';
 
     // style.textDecoration = vttStyles.textDecoration.join(' ');
-    style.writingMode = vttStyles.writingMode;
+    style.writingMode = vttStyles.writingMode; // @todo this should be: vertical-rl || vertical-lr
 
+    // reset cue container inset
     style.left = ''
     style.right = ''
     style.bottom = ''
     style.top = ''
+
     if (vttStyles.backgroundImage) {
       style.backgroundImage = 'url(\'' + vttStyles.backgroundImage + '\')';
       style.backgroundRepeat = 'no-repeat';
@@ -167,12 +182,14 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
       }
     }
 
+    // @todo check for % and number rules
     if (vttStyles.line) {
         style.top = containerHeight / 50 - (vttStyles.line * 50 % containerHeight)  + "px"
 
 
     }
 
+    // reset any undefined css attrs
     Object.keys(style).map(attr => {
         if (!style[attr] || style[attr] == undefined){
             style[attr] = ''
@@ -185,11 +202,11 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
 
   function getLengthValueInfo (lengthValue) {
     const matches = new RegExp(/(\d*\.?\d+)([a-z]+|%+)/).exec(lengthValue);
-    
+
     if (!matches) {
-      return getLengthValueInfo(lengthValue + "%")
+      return null;
     }
-    
+
     return {
       value: Number(matches[1]),
       unit: matches[2],
@@ -197,14 +214,13 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
   }
 
   function getAbsoluteLengthInPixels(value, containerHeight){
-      return (value * containerHeight) + 'px';
+    return (containerHeight * value / 50 /** cell/line height */) + 'px';
   }
 
   function convertLengthValue (lengthValue, containerHeight) {
     const lengthValueInfo =
         getLengthValueInfo(lengthValue);
 
-        console.log({lengthValueInfo})
     if (!lengthValueInfo) {
       return lengthValue;
     }
@@ -214,7 +230,7 @@ export function vttStylesToCSS(vttStyleText, containerHeight) {
     switch (unit) {
       case '%':
         return getAbsoluteLengthInPixels(
-            ( value) / 100, 1);
+            ( value) / 100, containerHeight);
       case 'c':
         return getAbsoluteLengthInPixels(
             value, containerHeight);
