@@ -7,6 +7,7 @@ export default class HlsManager {
   _tracks = [];
 
   loadManifest = async url => {
+    Logger.info("Loading M3U8 Manifest", url)
     this._manifestBaseUrl = this._getBaseUrl(url);
     const manifestText = await request("GET", url);
     const manifestObj = this._parse(manifestText);
@@ -18,9 +19,10 @@ export default class HlsManager {
   loadTrack = async language => {
     const trackManifestIndex = this._tracks.findIndex(m => m.language == language);
     if (this._tracks[trackManifestIndex].loaded){
+      Logger.info("Loading Text Track for ", language, " Already loaded, skipping")
       return;
     }
-
+    Logger.info("Loading Text Track for ", language)
     const trackManefestText = await request("GET", this._manifestBaseUrl + "/" + this._tracks[trackManifestIndex].uri);
     const trackManifestObject = this._parse(trackManefestText);
     this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
@@ -52,8 +54,6 @@ export default class HlsManager {
   getSegmentForDuration = (language, durationInSeconds) => {
     const trackManifest = this._tracks.find(m => m.language == language);
     const segemntIndex = parseInt(durationInSeconds / trackManifest.targetDuration);
-
-    console.log(segemntIndex)
     return {
       url: this.getSegment(language, segemntIndex).url, 
       index: segemntIndex,
@@ -61,7 +61,7 @@ export default class HlsManager {
     }
     
   } 
-
+  
   getTracks = () => {
     return this._tracks;
   }

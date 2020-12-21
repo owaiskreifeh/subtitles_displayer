@@ -17,7 +17,6 @@ subtitlesDisplayer
             textShadow: '2px 2px 4px #000',
 
         })
-        console.log(tracks)
     })
 
 window.subtitlesDisplayer = subtitlesDisplayer;

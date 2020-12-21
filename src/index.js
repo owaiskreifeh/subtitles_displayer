@@ -26,12 +26,15 @@ export default class SubtitlesDisplayer {
 
     this._hlsManager = null;
     this._isSegmented = false;
-    this._currentLoadingUrls = [];
-    this._loadedUrls = [];
-    this._throttolRequests = false;
+    this._loadedBuffer = [];
+
     if (videoElement) {
       this._registerListener();
     }
+  }
+
+  getCurrentTrack = () => {
+    return this._currenTextTrack;
   }
 
   addTrack = async (url, language) => {
@@ -58,10 +61,13 @@ export default class SubtitlesDisplayer {
       tracks.forEach(track => {
         this._textTracks.push(track);
       })
+      return this._textTracks;
     })
   }
 
   selectTrackLanguage = async language => {
+    Logger.info("Changing Track Language ", language)
+
     const track = this._textTracks.find(
       t => t.language.toLowerCase() === language.toLowerCase()
     );
@@ -76,7 +82,6 @@ export default class SubtitlesDisplayer {
             this._textTracks[i] = track
           }
         })
-        console.log(this._textTracks)
       })
     }
     this._currenTextTrack = track;
@@ -116,6 +121,10 @@ export default class SubtitlesDisplayer {
       return;
     }
 
+    if (this._isSegmented) {
+      this._loadNextSegments(language, duration);
+    }
+
     const currentCues = [];
     for (let index = 0; index < cues.length; index++) {
       const c = cues[index];
@@ -124,37 +133,33 @@ export default class SubtitlesDisplayer {
       }
     }
 
-    if (currentCues.length < 1 && this._isSegmented && !this._throttolRequests) {
-      this._throttolRequests = true;
-      setTimeout(() => {
-        const segment = this._hlsManager.getSegmentForDuration(language, duration);
-        this._loadSegemnt(language, segment.url);
-
-        // preload next segment
-        const nextUrl = this._hlsManager.getSegment(language, segment.index+1);
-        if (nextUrl.url) {
-          this._loadSegemnt(language, nextUrl.url);
-        }
-        this._throttolRequests = false;
-      }, 3000);
-    }
-
     if (!isArrayEqual(currentCues, this._lastRenderedCues, "index")) {
       this._renderCues(currentCues); // @todo deep compare cues
     }
   }
 
+  _loadNextSegments = (language, duration) => {
+    
+    const segmentIndex = parseInt(duration / this._currenTextTrack.targetDuration);
+    if (!this._loadedBuffer.includes(segmentIndex)){
+      this._loadedBuffer.push(segmentIndex)
+      const segment = this._hlsManager.getSegment(language, segmentIndex);
+      this._loadSegemnt(language, segment.url);  
+    }
+
+    if (!this._loadedBuffer.includes(segmentIndex + 1)){
+      // preload next segment
+      const nextSegment = this._hlsManager.getSegment(language, segmentIndex + 1);
+      if (nextSegment.url) {
+        this._loadedBuffer.push(segmentIndex + 1)
+        this._loadSegemnt(language, nextSegment.url);
+      }
+    }    
+  }
 
   _loadSegemnt = async (language, url) => {
-    console.log("_loadSegemnt", url)
-    if (this._currentLoadingUrls.includes(url) && this._loadedUrls.includes(url)){
-      return null;
-    }
-    this._currentLoadingUrls.push(url)
-    const lastIndex = this._currentLoadingUrls.length - 1;
     const cues = (await this._parseRemoteVtt(url)).cues;
     this.appendCues(language, cues)
-    this._loadedUrls.push(this._currentLoadingUrls.splice(lastIndex, 1)[0])
   }
 
   _parseRemoteVtt = async url => {
