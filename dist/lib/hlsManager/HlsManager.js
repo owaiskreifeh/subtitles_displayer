@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _m3u8Parser = require("m3u8-parser");
 
@@ -11,7 +11,7 @@ var _log = _interopRequireDefault(require("../log"));
 
 var _networking = require("../networking");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -32,20 +32,32 @@ class HlsManager {
     _defineProperty(this, "_tracks", []);
 
     _defineProperty(this, "loadManifest", /*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(function* (url) {
-        _log.default.info("Loading M3U8 Manifest", url);
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(url) {
+        var manifestText, manifestObj, tracks;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              _log["default"].info("Loading M3U8 Manifest", url);
 
-        _this._manifestBaseUrl = _this._getBaseUrl(url);
-        const manifestText = yield (0, _networking.request)("GET", url);
+              _this._manifestBaseUrl = _this._getBaseUrl(url);
+              _context.next = 4;
+              return (0, _networking.request)("GET", url);
 
-        const manifestObj = _this._parse(manifestText);
+            case 4:
+              manifestText = _context.sent;
+              manifestObj = _this._parse(manifestText);
+              tracks = manifestObj.mediaGroups.SUBTITLES[Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]];
 
-        const tracks = manifestObj.mediaGroups.SUBTITLES[Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]];
+              _this._populateTracks(tracks);
 
-        _this._populateTracks(tracks);
+              return _context.abrupt("return", _this._tracks);
 
-        return _this._tracks;
-      });
+            case 9:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee);
+      }));
 
       return function (_x) {
         return _ref.apply(this, arguments);
@@ -53,26 +65,42 @@ class HlsManager {
     }());
 
     _defineProperty(this, "loadTrack", /*#__PURE__*/function () {
-      var _ref2 = _asyncToGenerator(function* (language) {
-        const trackManifestIndex = _this._tracks.findIndex(m => m.language === language);
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(language) {
+        var trackManifestIndex, trackManefestText, trackManifestObject;
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
+            case 0:
+              trackManifestIndex = _this._tracks.findIndex(m => m.language === language);
 
-        if (_this._tracks[trackManifestIndex].loaded) {
-          _log.default.info("Loading Text Track for ", language, " Already loaded, skipping");
+              if (!_this._tracks[trackManifestIndex].loaded) {
+                _context2.next = 4;
+                break;
+              }
 
-          return;
-        }
+              _log["default"].info("Loading Text Track for ", language, " Already loaded, skipping");
 
-        _log.default.info("Loading Text Track for ", language);
+              return _context2.abrupt("return");
 
-        const trackManefestText = yield (0, _networking.request)("GET", (0, _networking.resolveUrl)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
+            case 4:
+              _log["default"].info("Loading Text Track for ", language);
 
-        const trackManifestObject = _this._parse(trackManefestText);
+              _context2.next = 7;
+              return (0, _networking.request)("GET", (0, _networking.resolveUrl)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
 
-        _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
-        _this._tracks[trackManifestIndex].loaded = true;
-        _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
-        return _this._tracks[trackManifestIndex];
-      });
+            case 7:
+              trackManefestText = _context2.sent;
+              trackManifestObject = _this._parse(trackManefestText);
+              _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
+              _this._tracks[trackManifestIndex].loaded = true;
+              _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
+              return _context2.abrupt("return", _this._tracks[trackManifestIndex]);
+
+            case 13:
+            case "end":
+              return _context2.stop();
+          }
+        }, _callee2);
+      }));
 
       return function (_x2) {
         return _ref2.apply(this, arguments);
@@ -139,7 +167,7 @@ class HlsManager {
       const urlSegments = url.split("/");
 
       if (urlSegments[0] === "http:") {
-        _log.default.warn(`Unsafe use of ${urlSegments[0]}`);
+        _log["default"].warn(`Unsafe use of ${urlSegments[0]}`);
       }
 
       urlSegments.pop(); // remove /manifest.m3u8
@@ -150,4 +178,4 @@ class HlsManager {
 
 }
 
-exports.default = HlsManager;
+exports["default"] = HlsManager;

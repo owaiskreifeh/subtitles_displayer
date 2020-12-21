@@ -8,7 +8,7 @@ exports.resolveUrl = resolveUrl;
 
 var _urlJoin = _interopRequireDefault(require("url-join"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 // Keep any extern-lib out
 // do not use Axios
@@ -43,5 +43,5 @@ function request(method, url) {
 }
 
 function resolveUrl(...args) {
-  return (0, _urlJoin.default)(...args).replace(/([^:]\/)\/+/g, "$1");
+  return (0, _urlJoin["default"])(...args).replace(/([^:]\/)\/+/g, "$1");
 }

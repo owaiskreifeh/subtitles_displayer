@@ -40,6 +40,9 @@
     "subtitles, vtt, m3u8"
   ],
   "dependencies": {
+    "@babel/plugin-transform-regenerator": "7.12.1",
+    "babel-plugin-transform-es3-member-expression-literals": "6.22.0",
+    "babel-plugin-transform-es3-property-literals": "6.22.0",
     "m3u8-parser": "4.5.0",
     "url-join": "4.0.1"
   },
