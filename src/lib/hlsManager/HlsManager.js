@@ -1,77 +1,95 @@
-import {Parser as M3U8Parser} from "m3u8-parser";
+import { Parser as M3U8Parser } from "m3u8-parser";
 import Logger from "../log";
-import {request} from "../networking";
+import { request } from "../networking";
 
 export default class HlsManager {
   _manifestBaseUrl = "";
+
   _tracks = [];
 
   loadManifest = async url => {
-    Logger.info("Loading M3U8 Manifest", url)
+    Logger.info("Loading M3U8 Manifest", url);
     this._manifestBaseUrl = this._getBaseUrl(url);
     const manifestText = await request("GET", url);
     const manifestObj = this._parse(manifestText);
-    const tracks = manifestObj.mediaGroups.SUBTITLES.subtitles;
+    const tracks =
+      manifestObj.mediaGroups.SUBTITLES[
+        Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]
+      ];
     this._populateTracks(tracks);
     return this._tracks;
   };
 
   loadTrack = async language => {
-    const trackManifestIndex = this._tracks.findIndex(m => m.language == language);
-    if (this._tracks[trackManifestIndex].loaded){
-      Logger.info("Loading Text Track for ", language, " Already loaded, skipping")
+    const trackManifestIndex = this._tracks.findIndex(
+      m => m.language === language
+    );
+    if (this._tracks[trackManifestIndex].loaded) {
+      Logger.info(
+        "Loading Text Track for ",
+        language,
+        " Already loaded, skipping"
+      );
       return;
     }
-    Logger.info("Loading Text Track for ", language)
-    const trackManefestText = await request("GET", this._manifestBaseUrl + "/" + this._tracks[trackManifestIndex].uri);
+    Logger.info("Loading Text Track for ", language);
+    const trackManefestText = await request(
+      "GET",
+      `${this._manifestBaseUrl}/${this._tracks[trackManifestIndex].uri}`
+    );
     const trackManifestObject = this._parse(trackManefestText);
     this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
     this._tracks[trackManifestIndex].loaded = true;
-    this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
+    this._tracks[trackManifestIndex].targetDuration =
+      trackManifestObject.targetDuration;
 
-    return this._tracks[trackManifestIndex];
-  }
+    Promise.resolve(this._tracks[trackManifestIndex]);
+  };
 
   getSegment = (language, index) => {
-    const trackManifestIndex = this._tracks.findIndex(m => m.language == language);
+    const trackManifestIndex = this._tracks.findIndex(
+      m => m.language === language
+    );
     if (index < this._tracks[trackManifestIndex].segments.length) {
-      const url = this._manifestBaseUrl 
-      + '/' 
-      + this._getBaseUrl(this._tracks[trackManifestIndex].uri)
-      + '/'
-      + this._tracks[trackManifestIndex].segments[index].uri;
+      const url = `${this._manifestBaseUrl}/${this._getBaseUrl(
+        this._tracks[trackManifestIndex].uri
+      )}/${this._tracks[trackManifestIndex].segments[index].uri}`;
 
       return {
-        url, index, ...this._tracks[trackManifestIndex].segments[index]
-      }
+        url,
+        index,
+        ...this._tracks[trackManifestIndex].segments[index]
+      };
     }
     return {
       url: "",
       index
-    }
-  }
+    };
+  };
 
   getSegmentForDuration = (language, durationInSeconds) => {
-    const trackManifest = this._tracks.find(m => m.language == language);
-    const segemntIndex = parseInt(durationInSeconds / trackManifest.targetDuration);
+    const trackManifest = this._tracks.find(m => m.language === language);
+    const segemntIndex = parseInt(
+      durationInSeconds / trackManifest.targetDuration,
+      10
+    );
     return {
-      url: this.getSegment(language, segemntIndex).url, 
+      url: this.getSegment(language, segemntIndex).url,
       index: segemntIndex,
       ...trackManifest.segments[segemntIndex]
-    }
-    
-  } 
-  
+    };
+  };
+
   getTracks = () => {
     return this._tracks;
-  }
+  };
 
   getTrack = language => {
-    return this._tracks.find(m => m.language == language);
-  }
+    return this._tracks.find(m => m.language === language);
+  };
 
   _populateTracks = tracks => {
-    let __tracks = [];
+    const __tracks = [];
     Object.keys(tracks).forEach(trackLabel => {
       __tracks.push({
         ...tracks[trackLabel],
@@ -80,24 +98,24 @@ export default class HlsManager {
         segments: [],
         segmented: true,
         loaded: false
-      })
-    })
+      });
+    });
     this._tracks = __tracks;
-  }
+  };
 
   _parse = m3u8Text => {
     const parser = new M3U8Parser();
     parser.push(m3u8Text);
     parser.end();
     return parser.manifest;
-  }
+  };
 
-  _getBaseUrl = url => { 
+  _getBaseUrl = url => {
     const urlSegments = url.split("/");
-    if (urlSegments[0] !== "https") {
+    if (urlSegments[0] === "http:") {
       Logger.warn(`Unsafe use of ${urlSegments[0]}`);
     }
-    urlSegments.pop();
+    urlSegments.pop(); // remove /manifest.m3u8
     return urlSegments.join("/");
   };
 }
