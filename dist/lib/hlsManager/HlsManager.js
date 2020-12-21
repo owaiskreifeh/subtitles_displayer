@@ -40,7 +40,7 @@ class HlsManager {
 
         const manifestObj = _this._parse(manifestText);
 
-        const tracks = manifestObj.mediaGroups.SUBTITLES.subtitles;
+        const tracks = manifestObj.mediaGroups.SUBTITLES[Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]];
 
         _this._populateTracks(tracks);
 
@@ -54,7 +54,7 @@ class HlsManager {
 
     _defineProperty(this, "loadTrack", /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator(function* (language) {
-        const trackManifestIndex = _this._tracks.findIndex(m => m.language == language);
+        const trackManifestIndex = _this._tracks.findIndex(m => m.language === language);
 
         if (_this._tracks[trackManifestIndex].loaded) {
           _log.default.info("Loading Text Track for ", language, " Already loaded, skipping");
@@ -64,14 +64,14 @@ class HlsManager {
 
         _log.default.info("Loading Text Track for ", language);
 
-        const trackManefestText = yield (0, _networking.request)("GET", _this._manifestBaseUrl + "/" + _this._tracks[trackManifestIndex].uri);
+        const trackManefestText = yield (0, _networking.request)("GET", `${_this._manifestBaseUrl}/${_this._tracks[trackManifestIndex].uri}`);
 
         const trackManifestObject = _this._parse(trackManefestText);
 
         _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
         _this._tracks[trackManifestIndex].loaded = true;
         _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
-        return _this._tracks[trackManifestIndex];
+        Promise.resolve(_this._tracks[trackManifestIndex]);
       });
 
       return function (_x2) {
@@ -80,11 +80,10 @@ class HlsManager {
     }());
 
     _defineProperty(this, "getSegment", (language, index) => {
-      const trackManifestIndex = this._tracks.findIndex(m => m.language == language);
+      const trackManifestIndex = this._tracks.findIndex(m => m.language === language);
 
       if (index < this._tracks[trackManifestIndex].segments.length) {
-        const url = this._manifestBaseUrl + '/' + this._getBaseUrl(this._tracks[trackManifestIndex].uri) + '/' + this._tracks[trackManifestIndex].segments[index].uri;
-
+        const url = `${this._manifestBaseUrl}/${this._getBaseUrl(this._tracks[trackManifestIndex].uri)}/${this._tracks[trackManifestIndex].segments[index].uri}`;
         return _objectSpread({
           url,
           index
@@ -98,9 +97,9 @@ class HlsManager {
     });
 
     _defineProperty(this, "getSegmentForDuration", (language, durationInSeconds) => {
-      const trackManifest = this._tracks.find(m => m.language == language);
+      const trackManifest = this._tracks.find(m => m.language === language);
 
-      const segemntIndex = parseInt(durationInSeconds / trackManifest.targetDuration);
+      const segemntIndex = parseInt(durationInSeconds / trackManifest.targetDuration, 10);
       return _objectSpread({
         url: this.getSegment(language, segemntIndex).url,
         index: segemntIndex
@@ -112,11 +111,11 @@ class HlsManager {
     });
 
     _defineProperty(this, "getTrack", language => {
-      return this._tracks.find(m => m.language == language);
+      return this._tracks.find(m => m.language === language);
     });
 
     _defineProperty(this, "_populateTracks", tracks => {
-      let __tracks = [];
+      const __tracks = [];
       Object.keys(tracks).forEach(trackLabel => {
         __tracks.push(_objectSpread(_objectSpread({}, tracks[trackLabel]), {}, {
           label: trackLabel,
@@ -139,11 +138,12 @@ class HlsManager {
     _defineProperty(this, "_getBaseUrl", url => {
       const urlSegments = url.split("/");
 
-      if (urlSegments[0] !== "https") {
+      if (urlSegments[0] === "http:") {
         _log.default.warn(`Unsafe use of ${urlSegments[0]}`);
       }
 
-      urlSegments.pop();
+      urlSegments.pop(); // remove /manifest.m3u8
+
       return urlSegments.join("/");
     });
   }
