@@ -40,7 +40,8 @@
     "subtitles, vtt, m3u8"
   ],
   "dependencies": {
-    "m3u8-parser": "4.5.0"
+    "m3u8-parser": "4.5.0",
+    "url-join": "4.0.1"
   },
   "devDependencies": {
     "@babel/cli": "7.4.4",

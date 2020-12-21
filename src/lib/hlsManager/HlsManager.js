@@ -1,4 +1,5 @@
 import { Parser as M3U8Parser } from "m3u8-parser";
+import urlJoin from "url-join";
 import Logger from "../log";
 import { request } from "../networking";
 
@@ -35,7 +36,7 @@ export default class HlsManager {
     Logger.info("Loading Text Track for ", language);
     const trackManefestText = await request(
       "GET",
-      `${this._manifestBaseUrl}/${this._tracks[trackManifestIndex].uri}`
+      urlJoin(this._manifestBaseUrl, this._tracks[trackManifestIndex].uri)
     );
     const trackManifestObject = this._parse(trackManefestText);
     this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
@@ -51,10 +52,11 @@ export default class HlsManager {
       m => m.language === language
     );
     if (index < this._tracks[trackManifestIndex].segments.length) {
-      const url = `${this._manifestBaseUrl}/${this._getBaseUrl(
-        this._tracks[trackManifestIndex].uri
-      )}/${this._tracks[trackManifestIndex].segments[index].uri}`;
-
+      const url = urlJoin(
+        this._manifestBaseUrl,
+        this._getBaseUrl(this._tracks[trackManifestIndex].uri),
+        this._tracks[trackManifestIndex].segments[index].uri
+      );
       return {
         url,
         index,
