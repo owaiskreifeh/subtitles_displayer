@@ -7,8 +7,6 @@ exports.default = void 0;
 
 var _m3u8Parser = require("m3u8-parser");
 
-var _urlJoin = _interopRequireDefault(require("url-join"));
-
 var _log = _interopRequireDefault(require("../log"));
 
 var _networking = require("../networking");
@@ -66,7 +64,7 @@ class HlsManager {
 
         _log.default.info("Loading Text Track for ", language);
 
-        const trackManefestText = yield (0, _networking.request)("GET", (0, _urlJoin.default)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
+        const trackManefestText = yield (0, _networking.request)("GET", (0, _networking.resolveUrl)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
 
         const trackManifestObject = _this._parse(trackManefestText);
 
@@ -85,7 +83,7 @@ class HlsManager {
       const trackManifestIndex = this._tracks.findIndex(m => m.language === language);
 
       if (index < this._tracks[trackManifestIndex].segments.length) {
-        const url = (0, _urlJoin.default)(this._manifestBaseUrl, this._getBaseUrl(this._tracks[trackManifestIndex].uri), this._tracks[trackManifestIndex].segments[index].uri);
+        const url = (0, _networking.resolveUrl)(this._manifestBaseUrl, this._getBaseUrl(this._tracks[trackManifestIndex].uri), this._tracks[trackManifestIndex].segments[index].uri);
         return _objectSpread({
           url,
           index
