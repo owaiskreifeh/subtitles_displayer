@@ -1,7 +1,10 @@
+import urlJoin from "url-join";
+
 // Keep any extern-lib out
 // do not use Axios
 // this package should be clean and self isolated as possible
 export function request(method, url) {
+  // eslint-disable-next-line func-names
   return new Promise(function(resolve, reject) {
     // 1. Create a new XMLHttpRequest object
     const xhr = new XMLHttpRequest();
@@ -30,4 +33,8 @@ export function request(method, url) {
       reject("Network error");
     };
   });
+}
+
+export function resolveUrl(...args) {
+  return urlJoin(...args).replace(/([^:]\/)\/+/g, "$1")
 }
