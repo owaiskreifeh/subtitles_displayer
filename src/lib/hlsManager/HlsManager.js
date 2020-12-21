@@ -43,7 +43,7 @@ export default class HlsManager {
     this._tracks[trackManifestIndex].targetDuration =
       trackManifestObject.targetDuration;
 
-    Promise.resolve(this._tracks[trackManifestIndex]);
+    return this._tracks[trackManifestIndex];
   };
 
   getSegment = (language, index) => {

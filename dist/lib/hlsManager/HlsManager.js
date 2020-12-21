@@ -71,7 +71,7 @@ class HlsManager {
         _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
         _this._tracks[trackManifestIndex].loaded = true;
         _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
-        Promise.resolve(_this._tracks[trackManifestIndex]);
+        return _this._tracks[trackManifestIndex];
       });
 
       return function (_x2) {
