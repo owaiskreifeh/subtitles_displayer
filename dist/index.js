@@ -80,10 +80,10 @@ class SubtitlesDisplayer {
         }
 
         if (_this._isSegmented) {
-          yield _this._hlsManager.loadTrack(language).then(track => {
+          yield _this._hlsManager.loadTrack(language).then(_track => {
             _this._textTracks.forEach((t, i) => {
-              if (track.language == t.language) {
-                _this._textTracks[i] = track;
+              if (_track.language === t.language) {
+                _this._textTracks[i] = _track;
               }
             });
           });
@@ -109,16 +109,21 @@ class SubtitlesDisplayer {
       this._cueStyles = styles;
     });
 
+    _defineProperty(this, "setCuesContainerStyle", styles => {
+      this._applyStyles(this._cuesContainer, styles);
+    });
+
     _defineProperty(this, "appendCues", (language, cues) => {
-      this._textTracks.forEach((t, i) => {
-        if (language == t.language) {
+      this._textTracks.forEach((t, _i) => {
+        if (language === t.language) {
           t.cues.push(...cues);
         }
       });
     });
 
     _defineProperty(this, "_loadNextSegments", (language, duration) => {
-      const segmentIndex = parseInt(duration / this._currenTextTrack.targetDuration);
+      const segmentIndex = parseInt(duration / this._currenTextTrack.targetDuration, 10 // base
+      );
 
       if (!this._loadedBuffer.includes(segmentIndex)) {
         this._loadedBuffer.push(segmentIndex);
@@ -142,7 +147,8 @@ class SubtitlesDisplayer {
 
     _defineProperty(this, "_loadSegemnt", /*#__PURE__*/function () {
       var _ref3 = _asyncToGenerator(function* (language, url) {
-        const cues = (yield _this._parseRemoteVtt(url)).cues;
+        const _yield$_this$_parseRe = yield _this._parseRemoteVtt(url),
+              cues = _yield$_this$_parseRe.cues;
 
         _this.appendCues(language, cues);
       });
@@ -157,7 +163,7 @@ class SubtitlesDisplayer {
         const vttText = yield (0, _networking.request)("GET", url);
         return _parser.default.parse(vttText, {
           meta: true
-        }, _this._videoContainer.clientHeight);
+        }, _this._videoContainer.clientHeight || _this._defaultSize.height);
       });
 
       return function (_x6) {
@@ -167,7 +173,7 @@ class SubtitlesDisplayer {
 
     _defineProperty(this, "_registerListener", () => {
       // start listen to video timeupdate if videoElement
-      this._videoElement.addEventListener("timeupdate", ev => {
+      this._videoElement.addEventListener("timeupdate", () => {
         this.updateSubtitles(this._videoElement.currentTime);
       });
     });
@@ -175,12 +181,12 @@ class SubtitlesDisplayer {
     _defineProperty(this, "_renderCues", cues => {
       this._clearRenderedCues();
 
-      cues.forEach((c, i) => {
+      cues.forEach(c => {
         const text = c.text.trim();
         const textLines = text.split("\n");
         const cueText = (0, _helpers.el)("p"); // @todo convert to <span>, nest inside <p>
 
-        cueText.style.width = `${this._videoContainer.clientWidth}px`;
+        cueText.style.width = `${this._videoContainer.clientWidth || this._defaultSize.width}px`;
         textLines.forEach((line, i) => {
           const lineSpan = (0, _helpers.el)("span");
           cueText.appendChild(lineSpan);
@@ -216,7 +222,6 @@ class SubtitlesDisplayer {
         container.style.height = this._videoContainer.style.height;
         container.style.top = 0;
         container.style.left = 0;
-        container.style.border = "2px dashed green";
 
         this._videoContainer.appendChild(container);
       }
@@ -244,11 +249,16 @@ class SubtitlesDisplayer {
     this._lastRenderedCues = [];
     this._cuesContainer = this._getCuesContainer(); // init container
 
+    this._cuesContainerStyles = {};
     this._cueStyles = {};
     _log.default.debug = debug;
     this._hlsManager = null;
     this._isSegmented = false;
     this._loadedBuffer = [];
+    this._defaultSize = {
+      height: "1920",
+      width: "1080"
+    };
 
     if (videoElement) {
       this._registerListener();
@@ -303,5 +313,3 @@ class SubtitlesDisplayer {
 }
 
 exports.default = SubtitlesDisplayer;
-
-_defineProperty(SubtitlesDisplayer, "hlsManager", new _HlsManager.default());
