@@ -10,7 +10,8 @@
     -   [Parameters](#parameters)
 -   [parseCue](#parsecue)
     -   [Parameters](#parameters-1)
--   [containerHeight](#containerheight)
+-   [vttStylesToCSS](#vttstylestocss)
+    -   [Parameters](#parameters-2)
 -   [line](#line)
 
 ### ParserError
@@ -36,7 +37,7 @@ Parse a single cue block.
 Returns **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** cue Cue object with start, end, text and styles.
                       Null if it's a note
 
-### containerHeight
+### vttStylesToCSS
 
 General rules for styling
 
@@ -48,11 +49,12 @@ size: assert size>0; width = size%
 align: if (vertical) align = vertical-align // if vertical attr appears in the cue settings
        else align = text-align
 
+#### Parameters
+
+-   `vttStyleText`  
+-   `containerHeight`  
+
 ### line
 
 line: if(int) line>0 ? top-down, bottom-top
 if(%): assert line>0; 0% top, 100% bottom
-
-### 
-
-cell/line height

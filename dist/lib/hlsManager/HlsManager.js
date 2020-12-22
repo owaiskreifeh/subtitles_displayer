@@ -48,7 +48,11 @@ class HlsManager {
               manifestObj = _this._parse(manifestText);
               tracks = manifestObj.mediaGroups.SUBTITLES[Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]];
 
-              _this._populateTracks(tracks);
+              if (tracks) {
+                _this._populateTracks(tracks);
+              } else {
+                _log["default"].warn("No subtitles tracks found in the manifest");
+              }
 
               return _context.abrupt("return", _this._tracks);
 
@@ -91,11 +95,17 @@ class HlsManager {
               trackManefestText = _context2.sent;
               trackManifestObject = _this._parse(trackManefestText);
               _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
+
+              if (!trackManifestObject.segments || trackManifestObject.segments.length < 1) {
+                _log["default"].warn(`No segments found in track ${language}`);
+              }
+
               _this._tracks[trackManifestIndex].loaded = true;
-              _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
+              _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration; // eslint-disable-next-line consistent-return
+
               return _context2.abrupt("return", _this._tracks[trackManifestIndex]);
 
-            case 13:
+            case 14:
             case "end":
               return _context2.stop();
           }
@@ -117,6 +127,8 @@ class HlsManager {
           index
         }, this._tracks[trackManifestIndex].segments[index]);
       }
+
+      _log["default"].error(`No segment with index${index} found`);
 
       return {
         url: "",

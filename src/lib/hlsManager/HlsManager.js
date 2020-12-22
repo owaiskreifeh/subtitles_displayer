@@ -16,7 +16,13 @@ export default class HlsManager {
       manifestObj.mediaGroups.SUBTITLES[
         Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]
       ];
-    this._populateTracks(tracks);
+
+    if (tracks) {
+      this._populateTracks(tracks);
+    } else {
+      Logger.warn("No subtitles tracks found in the manifest");
+    }
+
     return this._tracks;
   };
 
@@ -39,10 +45,17 @@ export default class HlsManager {
     );
     const trackManifestObject = this._parse(trackManefestText);
     this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
+    if (
+      !trackManifestObject.segments ||
+      trackManifestObject.segments.length < 1
+    ) {
+      Logger.warn(`No segments found in track ${language}`);
+    }
     this._tracks[trackManifestIndex].loaded = true;
     this._tracks[trackManifestIndex].targetDuration =
       trackManifestObject.targetDuration;
 
+    // eslint-disable-next-line consistent-return
     return this._tracks[trackManifestIndex];
   };
 
@@ -62,6 +75,7 @@ export default class HlsManager {
         ...this._tracks[trackManifestIndex].segments[index]
       };
     }
+    Logger.error(`No segment with index${index} found`);
     return {
       url: "",
       index
