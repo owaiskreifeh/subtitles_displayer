@@ -1,4 +1,4 @@
-import { vttStylesToCSS } from "./styleParser";
+import vttStylesToCSS from "./styleParser";
 /**
  * See spec: https://www.w3.org/TR/webvtt1/#file-structure
  */
@@ -12,7 +12,7 @@ ParserError.prototype = Object.create(Error.prototype);
 
 const TIMESTAMP_REGEXP = /([0-9]{1,2})?:?([0-9]{2}):([0-9]{2}\.[0-9]{2,3})/;
 
-function parse(input, options, containerHeight) {
+function parse(input, options, containerHeight, containerWidth) {
   if (!options) {
     options = {};
   }
@@ -54,7 +54,12 @@ function parse(input, options, containerHeight) {
     throw new ParserError("Missing blank line after signature");
   }
 
-  const { cues, errors } = parseCues(parts, strict, containerHeight);
+  const { cues, errors } = parseCues(
+    parts,
+    strict,
+    containerHeight,
+    containerWidth
+  );
 
   if (strict && errors.length > 0) {
     throw errors[0];
@@ -82,13 +87,13 @@ function parseMeta(headerParts) {
   return Object.keys(meta).length > 0 ? meta : null;
 }
 
-function parseCues(cues, strict, containerHeight) {
+function parseCues(cues, strict, containerHeight, containerWidth) {
   const errors = [];
 
   const parsedCues = cues
     .map((cue, i) => {
       try {
-        return parseCue(cue, i, strict, containerHeight);
+        return parseCue(cue, i, strict, containerHeight, containerWidth);
       } catch (e) {
         errors.push(e);
         return null;
@@ -112,7 +117,7 @@ function parseCues(cues, strict, containerHeight) {
  *                       Null if it's a note
  * @link https://developer.mozilla.org/en-US/docs/Web/API/WebVTT_API#Cue_payload_text_tags
  */
-function parseCue(cue, i, strict, containerHeight) {
+function parseCue(cue, i, strict, containerHeight, containerWidth) {
   let identifier = "";
   let start = 0;
   let end = 0.01;
@@ -174,7 +179,7 @@ function parseCue(cue, i, strict, containerHeight) {
 
   // TODO better style validation
   styles = times[1].replace(TIMESTAMP_REGEXP, "").trim();
-  const cssStyles = vttStylesToCSS(styles, containerHeight);
+  const cssStyles = vttStylesToCSS(styles, containerHeight, containerWidth);
   lines.shift();
 
   text = lines.join("\n");

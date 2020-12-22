@@ -247,7 +247,7 @@ class SubtitlesDisplayer {
               vttText = _context4.sent;
               return _context4.abrupt("return", _parser["default"].parse(vttText, {
                 meta: true
-              }, _this._videoContainer.clientHeight || _this._defaultSize.height));
+              }, _this._videoContainer.clientHeight || _this._defaultSize.height, _this._videoContainer.clientWidth || _this._defaultSize.width));
 
             case 4:
             case "end":
@@ -276,11 +276,10 @@ class SubtitlesDisplayer {
         const textLines = text.split("\n");
         const cueText = (0, _helpers.el)("p"); // @todo convert to <span>, nest inside <p>
 
-        cueText.style.width = `${this._videoContainer.clientWidth || this._defaultSize.width}px`;
         textLines.forEach((line, i) => {
           const lineSpan = (0, _helpers.el)("span");
           cueText.appendChild(lineSpan);
-          lineSpan.textContent = line;
+          lineSpan.innerHTML = line;
 
           if (i !== textLines.length - 1) {
             const breakLine = (0, _helpers.el)("br");
@@ -294,6 +293,8 @@ class SubtitlesDisplayer {
         }
 
         this._applyStyles(cueText, cueStyles);
+
+        console.log(c.text, cueStyles);
 
         this._cuesContainer.appendChild(cueText);
       }); // @todo refactor to call broswer apis one time
@@ -312,6 +313,9 @@ class SubtitlesDisplayer {
         container.style.height = this._videoContainer.style.height;
         container.style.top = 0;
         container.style.left = 0;
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.alignItems = "center";
 
         this._videoContainer.appendChild(container);
       }

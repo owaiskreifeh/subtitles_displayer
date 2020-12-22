@@ -40,9 +40,6 @@
     "subtitles, vtt, m3u8"
   ],
   "dependencies": {
-    "@babel/plugin-transform-regenerator": "7.12.1",
-    "babel-plugin-transform-es3-member-expression-literals": "6.22.0",
-    "babel-plugin-transform-es3-property-literals": "6.22.0",
     "m3u8-parser": "4.5.0",
     "url-join": "4.0.1"
   },
@@ -53,6 +50,9 @@
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
     "@babel/preset-env": "7.4.5",
     "@babel/preset-flow": "7.0.0",
+    "@babel/plugin-transform-regenerator": "7.12.1",
+    "babel-plugin-transform-es3-member-expression-literals": "6.22.0",
+    "babel-plugin-transform-es3-property-literals": "6.22.0",
     "babel-eslint": "10.0.2",
     "babel-jest": "24.8.0",
     "documentation": "11.0.1",

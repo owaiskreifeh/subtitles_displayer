@@ -33,6 +33,7 @@ Parse a single cue block.
 -   `i` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** Index of cue in array
 -   `strict`  
 -   `containerHeight`  
+-   `containerWidth`  
 
 Returns **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** cue Cue object with start, end, text and styles.
                       Null if it's a note
@@ -53,6 +54,7 @@ align: if (vertical) align = vertical-align // if vertical attr appears in the c
 
 -   `vttStyleText`  
 -   `containerHeight`  
+-   `containerWidth`  
 
 ### line
 

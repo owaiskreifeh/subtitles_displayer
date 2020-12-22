@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.vttStylesToCSS = vttStylesToCSS;
+exports["default"] = void 0;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -33,18 +33,9 @@ function styleParser(vttStyleText) {
 }
 
 function getLengthValueInfo(lengthValue) {
-  const matches = new RegExp(/(\d*\.?\d+)([a-z]+|%+)/).exec(lengthValue);
-
-  if (!matches) {
-    return {
-      value: Number(lengthValue),
-      unit: "line"
-    };
-  }
-
   return {
-    value: Number(matches[1]),
-    unit: matches[2]
+    value: parseInt(lengthValue, 10),
+    unit: `${lengthValue}`.includes("%") ? "%" : "em"
   };
 }
 /**
@@ -61,7 +52,7 @@ function getLengthValueInfo(lengthValue) {
  */
 
 
-function vttStylesToCSS(vttStyleText, containerHeight) {
+function vttStylesToCSS(vttStyleText, containerHeight, containerWidth) {
   if (!containerHeight) {
     throw "containerHeight should be set";
   }
@@ -76,17 +67,22 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
   style.opacity = vttStyles.opacity;
   style.paddingLeft = vttStyles.linePadding;
   style.paddingRight = vttStyles.linePadding;
-  style.textAlign = vttStyles.align || "center"; // @todo check if vertical
-  // style.textDecoration = vttStyles.textDecoration.join(' ');
+  style.position = "absolute";
+  style.margin = "0 1em";
 
-  style.writingMode = vttStyles.writingMode; // @todo this should be: vertical-rl || vertical-lr
+  if (!vttStyles.align || vttStyles.align === "middle") {
+    style.textAlign = "center";
+  } else {
+    style.textAlign = vttStyles.align;
+  } // style.textDecoration = vttStyles.textDecoration.join(' ');
+  // style.writingMode = vttStyles.writingMode; // @todo this should be: vertical-rl || vertical-lr
   // reset cue container inset
+
 
   style.left = "";
   style.right = "";
   style.bottom = "";
-  style.top = "";
-  style.position = "absolute";
+  style.top = ""; // style.position = "absolute";
 
   if (vttStyles.backgroundImage) {
     style.backgroundImage = `url('${vttStyles.backgroundImage}')`;
@@ -100,6 +96,12 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
       // so that the bitmap can be the only background.
       style.backgroundColor = "transparent";
     }
+  }
+
+  if (vttStyles.size) {
+    style.width = `${vttStyles.size}`.includes("%") ? vttStyles.size : `${vttStyles.size}px`;
+  } else {
+    style.width = `${containerWidth}px`;
   } // @todo check for % and number rules
 
   /**
@@ -112,7 +114,7 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
     const lenghtInfo = getLengthValueInfo(vttStyles.line);
 
     switch (lenghtInfo.unit) {
-      case "line":
+      case "em":
         if (lenghtInfo.value < 0) {
           style.bottom = `${lenghtInfo.value * -1}em`;
         } else {
@@ -122,14 +124,19 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
         break;
 
       case "%":
-        style.top = `${lenghtInfo.value / 100 * containerHeight}em`;
+        if (lenghtInfo.value > 90) {
+          style.bottom = "0em";
+        } else {
+          style.top = vttStyles.line;
+        }
+
         break;
 
       default:
         break;
     }
   } else {
-    style.bottom = "1em";
+    style.bottom = "0em";
   } // reset any undefined css attrs
 
 
@@ -140,3 +147,6 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
   });
   return style;
 }
+
+var _default = vttStylesToCSS;
+exports["default"] = _default;

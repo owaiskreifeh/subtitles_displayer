@@ -5,7 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _styleParser = require("./styleParser");
+var _styleParser = _interopRequireDefault(require("./styleParser"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 /**
  * See spec: https://www.w3.org/TR/webvtt1/#file-structure
@@ -18,7 +20,7 @@ function ParserError(message, error) {
 ParserError.prototype = Object.create(Error.prototype);
 const TIMESTAMP_REGEXP = /([0-9]{1,2})?:?([0-9]{2}):([0-9]{2}\.[0-9]{2,3})/;
 
-function parse(input, options, containerHeight) {
+function parse(input, options, containerHeight, containerWidth) {
   if (!options) {
     options = {};
   }
@@ -64,7 +66,7 @@ function parse(input, options, containerHeight) {
     throw new ParserError("Missing blank line after signature");
   }
 
-  const _parseCues = parseCues(parts, strict, containerHeight),
+  const _parseCues = parseCues(parts, strict, containerHeight, containerWidth),
         cues = _parseCues.cues,
         errors = _parseCues.errors;
 
@@ -98,11 +100,11 @@ function parseMeta(headerParts) {
   return Object.keys(meta).length > 0 ? meta : null;
 }
 
-function parseCues(cues, strict, containerHeight) {
+function parseCues(cues, strict, containerHeight, containerWidth) {
   const errors = [];
   const parsedCues = cues.map((cue, i) => {
     try {
-      return parseCue(cue, i, strict, containerHeight);
+      return parseCue(cue, i, strict, containerHeight, containerWidth);
     } catch (e) {
       errors.push(e);
       return null;
@@ -125,7 +127,7 @@ function parseCues(cues, strict, containerHeight) {
  */
 
 
-function parseCue(cue, i, strict, containerHeight) {
+function parseCue(cue, i, strict, containerHeight, containerWidth) {
   let identifier = "";
   let start = 0;
   let end = 0.01;
@@ -177,7 +179,7 @@ function parseCue(cue, i, strict, containerHeight) {
 
 
   styles = times[1].replace(TIMESTAMP_REGEXP, "").trim();
-  const cssStyles = (0, _styleParser.vttStylesToCSS)(styles, containerHeight);
+  const cssStyles = (0, _styleParser["default"])(styles, containerHeight, containerWidth);
   lines.shift();
   text = lines.join("\n");
 
