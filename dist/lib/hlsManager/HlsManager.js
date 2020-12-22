@@ -77,21 +77,22 @@ class HlsManager {
               trackManifestIndex = _this._tracks.findIndex(m => m.language === language);
 
               if (!_this._tracks[trackManifestIndex].loaded) {
-                _context2.next = 4;
+                _context2.next = 5;
                 break;
               }
 
               _log["default"].info("Loading Text Track for ", language, " Already loaded, skipping");
 
-              return _context2.abrupt("return");
+              _context2.next = 14;
+              break;
 
-            case 4:
+            case 5:
               _log["default"].info("Loading Text Track for ", language);
 
-              _context2.next = 7;
+              _context2.next = 8;
               return (0, _networking.request)("GET", (0, _networking.resolveUrl)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
 
-            case 7:
+            case 8:
               trackManefestText = _context2.sent;
               trackManifestObject = _this._parse(trackManefestText);
               _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
@@ -101,11 +102,12 @@ class HlsManager {
               }
 
               _this._tracks[trackManifestIndex].loaded = true;
-              _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration; // eslint-disable-next-line consistent-return
-
-              return _context2.abrupt("return", _this._tracks[trackManifestIndex]);
+              _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
 
             case 14:
+              return _context2.abrupt("return", _this._tracks[trackManifestIndex]);
+
+            case 15:
             case "end":
               return _context2.stop();
           }
@@ -128,7 +130,7 @@ class HlsManager {
         }, this._tracks[trackManifestIndex].segments[index]);
       }
 
-      _log["default"].error(`No segment with index${index} found`);
+      _log["default"].warn(`No segment with index ${index} found`);
 
       return {
         url: "",

@@ -36,25 +36,24 @@ export default class HlsManager {
         language,
         " Already loaded, skipping"
       );
-      return;
+    } else {
+      Logger.info("Loading Text Track for ", language);
+      const trackManefestText = await request(
+        "GET",
+        resolveUrl(this._manifestBaseUrl, this._tracks[trackManifestIndex].uri)
+      );
+      const trackManifestObject = this._parse(trackManefestText);
+      this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
+      if (
+        !trackManifestObject.segments ||
+        trackManifestObject.segments.length < 1
+      ) {
+        Logger.warn(`No segments found in track ${language}`);
+      }
+      this._tracks[trackManifestIndex].loaded = true;
+      this._tracks[trackManifestIndex].targetDuration =
+        trackManifestObject.targetDuration;
     }
-    Logger.info("Loading Text Track for ", language);
-    const trackManefestText = await request(
-      "GET",
-      resolveUrl(this._manifestBaseUrl, this._tracks[trackManifestIndex].uri)
-    );
-    const trackManifestObject = this._parse(trackManefestText);
-    this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
-    if (
-      !trackManifestObject.segments ||
-      trackManifestObject.segments.length < 1
-    ) {
-      Logger.warn(`No segments found in track ${language}`);
-    }
-    this._tracks[trackManifestIndex].loaded = true;
-    this._tracks[trackManifestIndex].targetDuration =
-      trackManifestObject.targetDuration;
-
     // eslint-disable-next-line consistent-return
     return this._tracks[trackManifestIndex];
   };
@@ -75,7 +74,7 @@ export default class HlsManager {
         ...this._tracks[trackManifestIndex].segments[index]
       };
     }
-    Logger.error(`No segment with index${index} found`);
+    Logger.warn(`No segment with index ${index} found`);
     return {
       url: "",
       index

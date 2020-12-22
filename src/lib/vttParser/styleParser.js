@@ -38,7 +38,7 @@ function getLengthValueInfo(lengthValue) {
  *        else align = text-align
  */
 
-function vttStylesToCSS(vttStyleText, containerHeight) {
+export function vttStylesToCSS(vttStyleText, containerHeight) {
   if (!containerHeight) {
     throw "containerHeight should be set";
   }
@@ -114,5 +114,3 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
   });
   return style;
 }
-
-export default { vttStylesToCSS };

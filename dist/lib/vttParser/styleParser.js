@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.vttStylesToCSS = vttStylesToCSS;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -140,8 +140,3 @@ function vttStylesToCSS(vttStyleText, containerHeight) {
   });
   return style;
 }
-
-var _default = {
-  vttStylesToCSS
-};
-exports["default"] = _default;

@@ -24,7 +24,7 @@ export default class SubtitlesDisplayer {
 
     this._hlsManager = null;
     this._isSegmented = false;
-    this._loadedBuffer = [];
+    this._loadedBuffer = {};
 
     this._defaultSize = {
       height: "1920",
@@ -113,7 +113,7 @@ export default class SubtitlesDisplayer {
 
   // call manually when no videoElement
   // time => currentTime
-  async updateSubtitles(duration) {
+  updateSubtitles(duration) {
     if (!this._isVisible) return;
 
     if (!this._currenTextTrack.cues) {
@@ -148,26 +148,39 @@ export default class SubtitlesDisplayer {
       duration / this._currenTextTrack.targetDuration,
       10 // base
     );
-    if (!this._loadedBuffer.includes(segmentIndex)) {
-      this._loadedBuffer.push(segmentIndex);
+
+    if (!this._loadedBuffer[language]){
+      this._loadedBuffer[language] = [];
+    }
+
+    if (!this._loadedBuffer[language].includes(segmentIndex)) {
+      this._loadedBuffer[language].push(segmentIndex);
       const segment = this._hlsManager.getSegment(language, segmentIndex);
       this._loadSegemnt(language, segment.url);
     }
 
-    if (!this._loadedBuffer.includes(segmentIndex + 1)) {
+    if (!this._loadedBuffer[language].includes(segmentIndex + 1)) {
       // preload next segment
       const nextSegment = this._hlsManager.getSegment(
         language,
         segmentIndex + 1
       );
       if (nextSegment.url) {
-        this._loadedBuffer.push(segmentIndex + 1);
+        this._loadedBuffer[language].push(segmentIndex + 1);
         this._loadSegemnt(language, nextSegment.url);
       }
     }
   };
 
   _loadSegemnt = async (language, url) => {
+    if (!language) {
+      Logger.error("Can't fetch for empty language");
+      return;
+    }
+    if (!url) {
+      Logger.error(`Empty Url fro language ${language}`);
+      return;
+    }
     const { cues } = await this._parseRemoteVtt(url);
     this.appendCues(language, cues);
   };

@@ -162,20 +162,24 @@ class SubtitlesDisplayer {
       const segmentIndex = parseInt(duration / this._currenTextTrack.targetDuration, 10 // base
       );
 
-      if (!this._loadedBuffer.includes(segmentIndex)) {
-        this._loadedBuffer.push(segmentIndex);
+      if (!this._loadedBuffer[language]) {
+        this._loadedBuffer[language] = [];
+      }
+
+      if (!this._loadedBuffer[language].includes(segmentIndex)) {
+        this._loadedBuffer[language].push(segmentIndex);
 
         const segment = this._hlsManager.getSegment(language, segmentIndex);
 
         this._loadSegemnt(language, segment.url);
       }
 
-      if (!this._loadedBuffer.includes(segmentIndex + 1)) {
+      if (!this._loadedBuffer[language].includes(segmentIndex + 1)) {
         // preload next segment
         const nextSegment = this._hlsManager.getSegment(language, segmentIndex + 1);
 
         if (nextSegment.url) {
-          this._loadedBuffer.push(segmentIndex + 1);
+          this._loadedBuffer[language].push(segmentIndex + 1);
 
           this._loadSegemnt(language, nextSegment.url);
         }
@@ -189,16 +193,36 @@ class SubtitlesDisplayer {
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
             case 0:
-              _context3.next = 2;
+              if (language) {
+                _context3.next = 3;
+                break;
+              }
+
+              _log["default"].error("Can't fetch for empty language");
+
+              return _context3.abrupt("return");
+
+            case 3:
+              if (url) {
+                _context3.next = 6;
+                break;
+              }
+
+              _log["default"].error(`Empty Url fro language ${language}`);
+
+              return _context3.abrupt("return");
+
+            case 6:
+              _context3.next = 8;
               return _this._parseRemoteVtt(url);
 
-            case 2:
+            case 8:
               _yield$_this$_parseRe = _context3.sent;
               cues = _yield$_this$_parseRe.cues;
 
               _this.appendCues(language, cues);
 
-            case 5:
+            case 11:
             case "end":
               return _context3.stop();
           }
@@ -320,7 +344,7 @@ class SubtitlesDisplayer {
     _log["default"].debug = debug;
     this._hlsManager = null;
     this._isSegmented = false;
-    this._loadedBuffer = [];
+    this._loadedBuffer = {};
     this._defaultSize = {
       height: "1920",
       width: "1080"
@@ -334,69 +358,42 @@ class SubtitlesDisplayer {
   // call manually when no videoElement
   // time => currentTime
   updateSubtitles(duration) {
-    var _this2 = this;
+    if (!this._isVisible) return;
 
-    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
-      var _this2$_currenTextTra, cues, language, currentCues, index, c;
+    if (!this._currenTextTrack.cues) {
+      _log["default"].warn("No selected track");
 
-      return regeneratorRuntime.wrap(function _callee5$(_context5) {
-        while (1) switch (_context5.prev = _context5.next) {
-          case 0:
-            if (_this2._isVisible) {
-              _context5.next = 2;
-              break;
-            }
+      return;
+    }
 
-            return _context5.abrupt("return");
+    const _this$_currenTextTrac = this._currenTextTrack,
+          cues = _this$_currenTextTrac.cues,
+          language = _this$_currenTextTrac.language;
 
-          case 2:
-            if (_this2._currenTextTrack.cues) {
-              _context5.next = 5;
-              break;
-            }
+    if (!cues) {
+      _log["default"].warn("No cues in the track");
 
-            _log["default"].warn("No selected track");
+      return;
+    }
 
-            return _context5.abrupt("return");
+    if (this._isSegmented) {
+      this._loadNextSegments(language, duration);
+    }
 
-          case 5:
-            _this2$_currenTextTra = _this2._currenTextTrack, cues = _this2$_currenTextTra.cues, language = _this2$_currenTextTra.language;
+    const currentCues = [];
 
-            if (cues) {
-              _context5.next = 9;
-              break;
-            }
+    for (let index = 0; index < cues.length; index++) {
+      const c = cues[index];
 
-            _log["default"].warn("No cues in the track");
+      if (duration >= c.start && duration <= c.end) {
+        currentCues.push(c);
+      }
+    }
 
-            return _context5.abrupt("return");
+    if (!(0, _helpers.isArrayEqual)(currentCues, this._lastRenderedCues, "index")) {
+      this._renderCues(currentCues); // @todo deep compare cues
 
-          case 9:
-            if (_this2._isSegmented) {
-              _this2._loadNextSegments(language, duration);
-            }
-
-            currentCues = [];
-
-            for (index = 0; index < cues.length; index++) {
-              c = cues[index];
-
-              if (duration >= c.start && duration <= c.end) {
-                currentCues.push(c);
-              }
-            }
-
-            if (!(0, _helpers.isArrayEqual)(currentCues, _this2._lastRenderedCues, "index")) {
-              _this2._renderCues(currentCues); // @todo deep compare cues
-
-            }
-
-          case 13:
-          case "end":
-            return _context5.stop();
-        }
-      }, _callee5);
-    }))();
+    }
   }
 
 }
