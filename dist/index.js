@@ -294,8 +294,6 @@ class SubtitlesDisplayer {
 
         this._applyStyles(cueText, cueStyles);
 
-        console.log(c.text, cueStyles);
-
         this._cuesContainer.appendChild(cueText);
       }); // @todo refactor to call broswer apis one time
 
