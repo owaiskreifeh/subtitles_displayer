@@ -35,7 +35,7 @@ class AdManager {
       for (let index = 0; index < this._adsCues.length; index++) {
         const adsCue = this._adsCues[index];
 
-        if (duration <= adsCue.endTime) {
+        if (duration >= adsCue.endTime) {
           adsDurations += adsCue.endTime - adsCue.startTime;
         }
       }
