@@ -3,6 +3,7 @@ import VttParser from "./lib/vttParser/parser";
 import HlsManager from "./lib/hlsManager/HlsManager";
 import Logger from "./lib/log";
 import { $, el, isArrayEqual } from "./lib/helpers";
+import AdManager from "./lib/adManager/AdManager";
 
 const CUE_CONT_CLASS = "__displayer_cues_container";
 export default class SubtitlesDisplayer {
@@ -25,6 +26,9 @@ export default class SubtitlesDisplayer {
     this._hlsManager = null;
     this._isSegmented = false;
     this._loadedBuffer = {};
+
+    this._adManager = null;
+    this._hasAds = false;
 
     this._defaultSize = {
       height: "1920",
@@ -67,6 +71,23 @@ export default class SubtitlesDisplayer {
     });
   };
 
+  appendAdsCues = adsCues => {
+    if (adsCues && adsCues.length > 0) {
+      if (!this._adManager) {
+        this._adManager = new AdManager();
+        this._hasAds = true;
+      }
+      this._adManager.appendCues(adsCues);
+    }
+  };
+
+  flushAdsCues = () => {
+    if (this._hasAds) {
+      return this._adManager.flushCues();
+    }
+    return [];
+  };
+
   selectTrackLanguage = async language => {
     Logger.info("Changing Track Language ", language);
 
@@ -104,7 +125,7 @@ export default class SubtitlesDisplayer {
   };
 
   appendCues = (language, cues) => {
-    this._textTracks.forEach((t, _i) => {
+    this._textTracks.forEach(t => {
       if (language === t.language) {
         t.cues.push(...cues);
       }
@@ -113,7 +134,7 @@ export default class SubtitlesDisplayer {
 
   // call manually when no videoElement
   // time => currentTime
-  updateSubtitles(duration) {
+  updateSubtitles(videoDuration) {
     if (!this._isVisible) return;
 
     if (!this._currenTextTrack.cues) {
@@ -124,6 +145,11 @@ export default class SubtitlesDisplayer {
     if (!cues) {
       Logger.warn("No cues in the track");
       return;
+    }
+
+    let duration = videoDuration;
+    if (this._hasAds) {
+      duration = this._adManager.getRealDuration(videoDuration);
     }
 
     if (this._isSegmented) {
@@ -149,7 +175,7 @@ export default class SubtitlesDisplayer {
       10 // base
     );
 
-    if (!this._loadedBuffer[language]){
+    if (!this._loadedBuffer[language]) {
       this._loadedBuffer[language] = [];
     }
 
@@ -258,6 +284,7 @@ export default class SubtitlesDisplayer {
 
   _applyStyles = (element, styles) => {
     Object.keys(styles).forEach(attr => {
+      // eslint-disable-next-line no-param-reassign
       element.style[attr] = styles[attr];
     });
   };

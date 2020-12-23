@@ -15,6 +15,8 @@ var _log = _interopRequireDefault(require("./lib/log"));
 
 var _helpers = require("./lib/helpers");
 
+var _AdManager = _interopRequireDefault(require("./lib/adManager/AdManager"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -87,6 +89,25 @@ class SubtitlesDisplayer {
       });
     });
 
+    _defineProperty(this, "appendAdsCues", adsCues => {
+      if (adsCues && adsCues.length > 0) {
+        if (!this._adManager) {
+          this._adManager = new _AdManager["default"]();
+          this._hasAds = true;
+        }
+
+        this._adManager.appendCues(adsCues);
+      }
+    });
+
+    _defineProperty(this, "flushAdsCues", () => {
+      if (this._hasAds) {
+        return this._adManager.flushCues();
+      }
+
+      return [];
+    });
+
     _defineProperty(this, "selectTrackLanguage", /*#__PURE__*/function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(language) {
         var track;
@@ -151,7 +172,7 @@ class SubtitlesDisplayer {
     });
 
     _defineProperty(this, "appendCues", (language, cues) => {
-      this._textTracks.forEach((t, _i) => {
+      this._textTracks.forEach(t => {
         if (language === t.language) {
           t.cues.push(...cues);
         }
@@ -329,6 +350,7 @@ class SubtitlesDisplayer {
 
     _defineProperty(this, "_applyStyles", (element, styles) => {
       Object.keys(styles).forEach(attr => {
+        // eslint-disable-next-line no-param-reassign
         element.style[attr] = styles[attr];
       });
     });
@@ -347,6 +369,8 @@ class SubtitlesDisplayer {
     this._hlsManager = null;
     this._isSegmented = false;
     this._loadedBuffer = {};
+    this._adManager = null;
+    this._hasAds = false;
     this._defaultSize = {
       height: "1920",
       width: "1080"
@@ -359,7 +383,7 @@ class SubtitlesDisplayer {
 
   // call manually when no videoElement
   // time => currentTime
-  updateSubtitles(duration) {
+  updateSubtitles(videoDuration) {
     if (!this._isVisible) return;
 
     if (!this._currenTextTrack.cues) {
@@ -376,6 +400,12 @@ class SubtitlesDisplayer {
       _log["default"].warn("No cues in the track");
 
       return;
+    }
+
+    let duration = videoDuration;
+
+    if (this._hasAds) {
+      duration = this._adManager.getRealDuration(videoDuration);
     }
 
     if (this._isSegmented) {
