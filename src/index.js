@@ -52,7 +52,7 @@ export default class SubtitlesDisplayer {
       throw `language should be of type string, else found ${typeof language}`;
     }
 
-    const vttObject = this._parseRemoteVtt(url);
+    const vttObject = await this._parseRemoteVtt(url);
     this._textTracks.push({
       language,
       cues: vttObject.cues

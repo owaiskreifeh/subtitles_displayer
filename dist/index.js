@@ -57,7 +57,11 @@ class SubtitlesDisplayer {
               throw `language should be of type string, else found ${typeof language}`;
 
             case 4:
-              vttObject = _this._parseRemoteVtt(url);
+              _context.next = 6;
+              return _this._parseRemoteVtt(url);
+
+            case 6:
+              vttObject = _context.sent;
 
               _this._textTracks.push({
                 language,
@@ -66,7 +70,7 @@ class SubtitlesDisplayer {
 
               return _context.abrupt("return", _this._textTracks);
 
-            case 7:
+            case 9:
             case "end":
               return _context.stop();
           }
