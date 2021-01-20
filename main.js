@@ -19,4 +19,7 @@ subtitlesDisplayer
         })
     })
 
-window.subtitlesDisplayer = subtitlesDisplayer;
+
+if(window){
+    window.subtitlesDisplayer = subtitlesDisplayer;
+}

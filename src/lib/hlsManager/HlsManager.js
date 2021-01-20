@@ -12,7 +12,7 @@ export default class HlsManager {
     this._manifestBaseUrl = this._getBaseUrl(url);
     const manifestText = await request("GET", url);
     const manifestObj = this._parse(manifestText);
-    Logger.v_info("Manifest loaded, raw object: ", manifestObj)
+    Logger.v_info("Manifest loaded, raw object: ", manifestObj);
 
     const tracks =
       manifestObj.mediaGroups.SUBTITLES[
@@ -33,7 +33,7 @@ export default class HlsManager {
       m => m.language === language
     );
 
-    if (!(trackManifestIndex >= 0)){
+    if (!(trackManifestIndex >= 0)) {
       Logger.error(`Manifest has no tracks for language ${language}`);
       return null;
     }
@@ -71,7 +71,10 @@ export default class HlsManager {
       const trackManifestIndex = this._tracks.findIndex(
         m => m.language === language
       );
-      if (trackManifestIndex >= 0 && index < this._tracks[trackManifestIndex].segments.length) {
+      if (
+        trackManifestIndex >= 0 &&
+        index < this._tracks[trackManifestIndex].segments.length
+      ) {
         const url = resolveUrl(
           this._manifestBaseUrl,
           this._getBaseUrl(this._tracks[trackManifestIndex].uri),
@@ -82,8 +85,11 @@ export default class HlsManager {
           index,
           ...this._tracks[trackManifestIndex].segments[index]
         };
+        // eslint-disable-next-line no-else-return
       } else {
-        Logger.warn(`No segment with index ${index} found for language ${language}`);
+        Logger.warn(
+          `No segment with index ${index} found for language ${language}`
+        );
       }
     } else {
       Logger.error(`No tracks loaded yet or the manifest has no tracks`);

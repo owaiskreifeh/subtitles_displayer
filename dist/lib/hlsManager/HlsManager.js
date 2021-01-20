@@ -141,7 +141,7 @@ class HlsManager {
           return _objectSpread({
             url,
             index
-          }, this._tracks[trackManifestIndex].segments[index]);
+          }, this._tracks[trackManifestIndex].segments[index]); // eslint-disable-next-line no-else-return
         } else {
           _log["default"].warn(`No segment with index ${index} found for language ${language}`);
         }

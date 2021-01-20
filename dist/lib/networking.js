@@ -20,14 +20,18 @@ function request(method, url) {
 
 
   return new Promise(function (resolve, reject) {
-    // 1. Create a new XMLHttpRequest object
+    if (XMLHttpRequest === undefined) {
+      reject(new Error("XMLHttpRequest is not defined"));
+    } // 1. Create a new XMLHttpRequest object
+
+
     const xhr = new XMLHttpRequest(); // 2. Configure it: GET-request for the URL /article/.../load
 
     xhr.open(method, url); // 3. Send the request over the network
 
     xhr.send(); // 4. This will be called after the response is received
 
-    xhr.onload = function () {
+    xhr.onload = () => {
       if (xhr.status !== 200) {
         _log["default"].v_info("NETWORK: fetching ", url, " [FAILED] ", xhr.status); // analyze HTTP status of the response
 
@@ -44,8 +48,8 @@ function request(method, url) {
       }
     };
 
-    xhr.onerror = function () {
-      reject("Network error");
+    xhr.onerror = () => {
+      reject(new Error("Network error"));
     };
   });
 }
