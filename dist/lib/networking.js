@@ -8,13 +8,17 @@ exports.resolveUrl = resolveUrl;
 
 var _urlJoin = _interopRequireDefault(require("url-join"));
 
+var _log = _interopRequireDefault(require("./log"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 // Keep any extern-lib out
 // do not use Axios
 // this package should be clean and self isolated as possible
 function request(method, url) {
-  // eslint-disable-next-line func-names
+  _log["default"].v_info("NETWORK: fetching ", url); // eslint-disable-next-line func-names
+
+
   return new Promise(function (resolve, reject) {
     // 1. Create a new XMLHttpRequest object
     const xhr = new XMLHttpRequest(); // 2. Configure it: GET-request for the URL /article/.../load
@@ -25,13 +29,17 @@ function request(method, url) {
 
     xhr.onload = function () {
       if (xhr.status !== 200) {
-        // analyze HTTP status of the response
+        _log["default"].v_info("NETWORK: fetching ", url, " [FAILED] ", xhr.status); // analyze HTTP status of the response
+
+
         reject({
           status: xhr.status,
           response: xhr.response
         });
       } else {
-        // show the result
+        _log["default"].v_info("NETWORK: fetching ", url, " [SUCCESS] "); // show the result
+
+
         resolve(xhr.response);
       }
     };

@@ -35,6 +35,10 @@ class SubtitlesDisplayer {
       return this._currenTextTrack;
     });
 
+    _defineProperty(this, "getTracks", () => {
+      return this._textTracks;
+    });
+
     _defineProperty(this, "addTrack", /*#__PURE__*/function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(url, language) {
         var vttObject;
@@ -159,6 +163,10 @@ class SubtitlesDisplayer {
       };
     }());
 
+    _defineProperty(this, "enableVerboseLog", on => {
+      _log["default"].verbose = on;
+    });
+
     _defineProperty(this, "setTextVisiblity", visbile => {
       this._isVisible = visbile;
 
@@ -172,6 +180,8 @@ class SubtitlesDisplayer {
     });
 
     _defineProperty(this, "setCuesContainerStyle", styles => {
+      _log["default"].v_info("Updating Cues Container styles");
+
       this._applyStyles(this._cuesContainer, styles);
     });
 
@@ -188,10 +198,14 @@ class SubtitlesDisplayer {
       );
 
       if (!this._loadedBuffer[language]) {
+        _log["default"].v_info("Init segments buffer");
+
         this._loadedBuffer[language] = [];
       }
 
       if (!this._loadedBuffer[language].includes(segmentIndex)) {
+        _log["default"].v_info("Loading current segment ", segmentIndex);
+
         this._loadedBuffer[language].push(segmentIndex);
 
         const segment = this._hlsManager.getSegment(language, segmentIndex);
@@ -204,6 +218,8 @@ class SubtitlesDisplayer {
         const nextSegment = this._hlsManager.getSegment(language, segmentIndex + 1);
 
         if (nextSegment.url) {
+          _log["default"].v_info("Loading next segment ", segmentIndex + 1);
+
           this._loadedBuffer[language].push(segmentIndex + 1);
 
           this._loadSegemnt(language, nextSegment.url);
@@ -329,6 +345,8 @@ class SubtitlesDisplayer {
       let container = (0, _helpers.$)(`.${CUE_CONT_CLASS}`);
 
       if (!container) {
+        _log["default"].v_info("Init cues container");
+
         container = (0, _helpers.el)("div");
         container.className = CUE_CONT_CLASS;
         container.style.position = "absolute";
@@ -390,7 +408,7 @@ class SubtitlesDisplayer {
   updateSubtitles(videoDuration) {
     if (!this._isVisible) return;
 
-    if (!this._currenTextTrack.cues) {
+    if (!this._currenTextTrack) {
       _log["default"].warn("No selected track");
 
       return;
@@ -399,13 +417,6 @@ class SubtitlesDisplayer {
     const _this$_currenTextTrac = this._currenTextTrack,
           cues = _this$_currenTextTrac.cues,
           language = _this$_currenTextTrac.language;
-
-    if (!cues) {
-      _log["default"].warn("No cues in the track");
-
-      return;
-    }
-
     let duration = videoDuration;
 
     if (this._hasAds) {
@@ -414,6 +425,12 @@ class SubtitlesDisplayer {
 
     if (this._isSegmented) {
       this._loadNextSegments(language, duration);
+    }
+
+    if (!cues) {
+      _log["default"].warn("No cues in the track");
+
+      return;
     }
 
     const currentCues = [];

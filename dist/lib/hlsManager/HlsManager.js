@@ -46,6 +46,9 @@ class HlsManager {
             case 4:
               manifestText = _context.sent;
               manifestObj = _this._parse(manifestText);
+
+              _log["default"].v_info("Manifest loaded, raw object: ", manifestObj);
+
               tracks = manifestObj.mediaGroups.SUBTITLES[Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]];
 
               if (tracks) {
@@ -56,7 +59,7 @@ class HlsManager {
 
               return _context.abrupt("return", _this._tracks);
 
-            case 9:
+            case 10:
             case "end":
               return _context.stop();
           }
@@ -76,23 +79,33 @@ class HlsManager {
             case 0:
               trackManifestIndex = _this._tracks.findIndex(m => m.language === language);
 
+              if (trackManifestIndex >= 0) {
+                _context2.next = 4;
+                break;
+              }
+
+              _log["default"].error(`Manifest has no tracks for language ${language}`);
+
+              return _context2.abrupt("return", null);
+
+            case 4:
               if (!_this._tracks[trackManifestIndex].loaded) {
-                _context2.next = 5;
+                _context2.next = 8;
                 break;
               }
 
               _log["default"].info("Loading Text Track for ", language, " Already loaded, skipping");
 
-              _context2.next = 14;
+              _context2.next = 17;
               break;
 
-            case 5:
+            case 8:
               _log["default"].info("Loading Text Track for ", language);
 
-              _context2.next = 8;
+              _context2.next = 11;
               return (0, _networking.request)("GET", (0, _networking.resolveUrl)(_this._manifestBaseUrl, _this._tracks[trackManifestIndex].uri));
 
-            case 8:
+            case 11:
               trackManefestText = _context2.sent;
               trackManifestObject = _this._parse(trackManefestText);
               _this._tracks[trackManifestIndex].segments = trackManifestObject.segments;
@@ -104,10 +117,10 @@ class HlsManager {
               _this._tracks[trackManifestIndex].loaded = true;
               _this._tracks[trackManifestIndex].targetDuration = trackManifestObject.targetDuration;
 
-            case 14:
+            case 17:
               return _context2.abrupt("return", _this._tracks[trackManifestIndex]);
 
-            case 15:
+            case 18:
             case "end":
               return _context2.stop();
           }
@@ -120,17 +133,21 @@ class HlsManager {
     }());
 
     _defineProperty(this, "getSegment", (language, index) => {
-      const trackManifestIndex = this._tracks.findIndex(m => m.language === language);
+      if (this._tracks && this._tracks.length > 0) {
+        const trackManifestIndex = this._tracks.findIndex(m => m.language === language);
 
-      if (index < this._tracks[trackManifestIndex].segments.length) {
-        const url = (0, _networking.resolveUrl)(this._manifestBaseUrl, this._getBaseUrl(this._tracks[trackManifestIndex].uri), this._tracks[trackManifestIndex].segments[index].uri);
-        return _objectSpread({
-          url,
-          index
-        }, this._tracks[trackManifestIndex].segments[index]);
+        if (trackManifestIndex >= 0 && index < this._tracks[trackManifestIndex].segments.length) {
+          const url = (0, _networking.resolveUrl)(this._manifestBaseUrl, this._getBaseUrl(this._tracks[trackManifestIndex].uri), this._tracks[trackManifestIndex].segments[index].uri);
+          return _objectSpread({
+            url,
+            index
+          }, this._tracks[trackManifestIndex].segments[index]);
+        } else {
+          _log["default"].warn(`No segment with index ${index} found for language ${language}`);
+        }
+      } else {
+        _log["default"].error(`No tracks loaded yet or the manifest has no tracks`);
       }
-
-      _log["default"].warn(`No segment with index ${index} found`);
 
       return {
         url: "",

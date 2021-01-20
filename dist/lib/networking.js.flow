@@ -1,9 +1,12 @@
 import urlJoin from "url-join";
+import Logger from "./log";
 
 // Keep any extern-lib out
 // do not use Axios
 // this package should be clean and self isolated as possible
 export function request(method, url) {
+  Logger.v_info("NETWORK: fetching ", url)
+
   // eslint-disable-next-line func-names
   return new Promise(function(resolve, reject) {
     // 1. Create a new XMLHttpRequest object
@@ -18,12 +21,14 @@ export function request(method, url) {
     // 4. This will be called after the response is received
     xhr.onload = function() {
       if (xhr.status !== 200) {
+        Logger.v_info("NETWORK: fetching ", url, " [FAILED] ", xhr.status)
         // analyze HTTP status of the response
         reject({
           status: xhr.status,
           response: xhr.response
         });
       } else {
+        Logger.v_info("NETWORK: fetching ", url, " [SUCCESS] ")
         // show the result
         resolve(xhr.response);
       }
