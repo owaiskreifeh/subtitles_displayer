@@ -1,8 +1,8 @@
-export const $ = document ? document.querySelector.bind(document) : () => null;
+const $ = document ? document.querySelector.bind(document) : () => null;
 
-export const el = document ? document.createElement.bind(document) : () => null;
+const el = document ? document.createElement.bind(document) : () => null;
 
-export function isArrayEqual(arr1, arr2, objProp = null) {
+function isArrayEqual(arr1, arr2, objProp = null) {
   // if the other array is a falsy value, return
   if (!arr2) return false;
 
@@ -32,3 +32,9 @@ export function isArrayEqual(arr1, arr2, objProp = null) {
   }
   return true;
 }
+
+export default {
+  $,
+  el,
+  isArrayEqual
+};

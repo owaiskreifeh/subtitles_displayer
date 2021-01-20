@@ -3,12 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isArrayEqual = isArrayEqual;
-exports.el = exports.$ = void 0;
+exports["default"] = void 0;
 const $ = document ? document.querySelector.bind(document) : () => null;
-exports.$ = $;
 const el = document ? document.createElement.bind(document) : () => null;
-exports.el = el;
 
 function isArrayEqual(arr1, arr2, objProp = null) {
   // if the other array is a falsy value, return
@@ -35,3 +32,10 @@ function isArrayEqual(arr1, arr2, objProp = null) {
 
   return true;
 }
+
+var _default = {
+  $,
+  el,
+  isArrayEqual
+};
+exports["default"] = _default;
