@@ -44,6 +44,10 @@ export default class SubtitlesDisplayer {
     return this._currenTextTrack;
   };
 
+  getTracks = () => {
+    return this._textTracks;
+  };
+
   addTrack = async (url, language) => {
     if (!url || typeof url !== "string") {
       throw `url should be of type strig, else found ${typeof url}`;
@@ -109,6 +113,10 @@ export default class SubtitlesDisplayer {
     this._currenTextTrack = track;
   };
 
+  enableVerboseLog = on => {
+    Logger.verbose = on;
+  }
+
   setTextVisiblity = visbile => {
     this._isVisible = visbile;
     if (!visbile) {
@@ -121,6 +129,7 @@ export default class SubtitlesDisplayer {
   };
 
   setCuesContainerStyle = styles => {
+    Logger.v_info("Updating Cues Container styles")
     this._applyStyles(this._cuesContainer, styles);
   };
 
@@ -137,23 +146,25 @@ export default class SubtitlesDisplayer {
   updateSubtitles(videoDuration) {
     if (!this._isVisible) return;
 
-    if (!this._currenTextTrack.cues) {
+    if (!this._currenTextTrack) {
       Logger.warn("No selected track");
       return;
     }
-    const { cues, language } = this._currenTextTrack;
-    if (!cues) {
-      Logger.warn("No cues in the track");
-      return;
-    }
 
+    const { cues, language } = this._currenTextTrack;
     let duration = videoDuration;
+    
     if (this._hasAds) {
       duration = this._adManager.getRealDuration(videoDuration);
     }
 
     if (this._isSegmented) {
       this._loadNextSegments(language, duration);
+    }
+
+    if (!cues) {
+      Logger.warn("No cues in the track");
+      return;
     }
 
     const currentCues = [];
@@ -176,10 +187,13 @@ export default class SubtitlesDisplayer {
     );
 
     if (!this._loadedBuffer[language]) {
+      Logger.v_info("Init segments buffer")
       this._loadedBuffer[language] = [];
     }
 
     if (!this._loadedBuffer[language].includes(segmentIndex)) {
+      Logger.v_info("Loading current segment ", segmentIndex)
+
       this._loadedBuffer[language].push(segmentIndex);
       const segment = this._hlsManager.getSegment(language, segmentIndex);
       this._loadSegemnt(language, segment.url);
@@ -192,6 +206,7 @@ export default class SubtitlesDisplayer {
         segmentIndex + 1
       );
       if (nextSegment.url) {
+        Logger.v_info("Loading next segment ", segmentIndex + 1)
         this._loadedBuffer[language].push(segmentIndex + 1);
         this._loadSegemnt(language, nextSegment.url);
       }
@@ -258,6 +273,8 @@ export default class SubtitlesDisplayer {
   _getCuesContainer = () => {
     let container = $(`.${CUE_CONT_CLASS}`);
     if (!container) {
+      Logger.v_info("Init cues container")
+
       container = el("div");
       container.className = CUE_CONT_CLASS;
 

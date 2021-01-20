@@ -12,6 +12,8 @@ export default class HlsManager {
     this._manifestBaseUrl = this._getBaseUrl(url);
     const manifestText = await request("GET", url);
     const manifestObj = this._parse(manifestText);
+    Logger.v_info("Manifest loaded, raw object: ", manifestObj)
+
     const tracks =
       manifestObj.mediaGroups.SUBTITLES[
         Object.keys(manifestObj.mediaGroups.SUBTITLES)[0]
@@ -30,6 +32,12 @@ export default class HlsManager {
     const trackManifestIndex = this._tracks.findIndex(
       m => m.language === language
     );
+
+    if (!(trackManifestIndex >= 0)){
+      Logger.error(`Manifest has no tracks for language ${language}`);
+      return null;
+    }
+
     if (this._tracks[trackManifestIndex].loaded) {
       Logger.info(
         "Loading Text Track for ",
@@ -59,22 +67,27 @@ export default class HlsManager {
   };
 
   getSegment = (language, index) => {
-    const trackManifestIndex = this._tracks.findIndex(
-      m => m.language === language
-    );
-    if (index < this._tracks[trackManifestIndex].segments.length) {
-      const url = resolveUrl(
-        this._manifestBaseUrl,
-        this._getBaseUrl(this._tracks[trackManifestIndex].uri),
-        this._tracks[trackManifestIndex].segments[index].uri
+    if (this._tracks && this._tracks.length > 0) {
+      const trackManifestIndex = this._tracks.findIndex(
+        m => m.language === language
       );
-      return {
-        url,
-        index,
-        ...this._tracks[trackManifestIndex].segments[index]
-      };
+      if (trackManifestIndex >= 0 && index < this._tracks[trackManifestIndex].segments.length) {
+        const url = resolveUrl(
+          this._manifestBaseUrl,
+          this._getBaseUrl(this._tracks[trackManifestIndex].uri),
+          this._tracks[trackManifestIndex].segments[index].uri
+        );
+        return {
+          url,
+          index,
+          ...this._tracks[trackManifestIndex].segments[index]
+        };
+      } else {
+        Logger.warn(`No segment with index ${index} found for language ${language}`);
+      }
+    } else {
+      Logger.error(`No tracks loaded yet or the manifest has no tracks`);
     }
-    Logger.warn(`No segment with index ${index} found`);
     return {
       url: "",
       index
